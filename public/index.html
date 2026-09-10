@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comandas - Drugstore La Rotonda</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f3f3f3;color:#111}
+header{
+    background:#111;
+    color:#fff;
+    padding:18px 24px;
+    font-size:25px;
+    font-weight:800;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px
+}
+
+#cerrarSesion{
+    border:1px solid #555;
+    border-radius:8px;
+    padding:9px 13px;
+    background:#222;
+    color:#fff;
+    font-size:14px;
+    font-weight:800;
+    cursor:pointer
+}
+
+#cerrarSesion:hover{
+    background:#333
+}
+.contenedor{display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:18px;padding:18px;max-width:1500px;margin:auto}
+.panel{background:#fff;border-radius:14px;padding:18px;box-shadow:0 3px 14px rgba(0,0,0,.08)}
+h2{margin:0 0 14px}
+.subtitulo{font-size:18px;font-weight:800;margin:15px 0 10px}
+.destinos-principales{display:grid;grid-template-columns:repeat(6,1fr);gap:9px}
+.destino,.destino-llevar{border:0;border-radius:10px;padding:15px 8px;font-size:17px;font-weight:800;cursor:pointer;background:#e8e8e8}
+.destino.seleccionado,.destino-llevar.seleccionado{background:#111;color:#fff}
+.destino-llevar{width:100%;margin-top:10px;background:#dedede}
+.destino-llevar.seleccionado{background:#111}
+#mesasExtra{display:none;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:9px}
+#mesasExtra.visible{display:grid}
+#mesasExtra .destino{padding:11px 5px;font-size:15px}
+#botonMasMesas{margin-top:9px;width:100%;border:1px solid #bbb;background:#fff;border-radius:10px;padding:11px;font-weight:800;cursor:pointer}
+#botonMasMesas.activo{background:#eee}
+.categorias{display:flex;flex-wrap:wrap;gap:9px;margin:18px 0}
+.categoria{border:0;border-radius:9px;padding:12px 16px;background:#e8e8e8;font-weight:800;cursor:pointer}
+.categoria.seleccionada{background:#111;color:#fff}
+.productos{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.producto{min-height:72px;border:1px solid #ddd;background:#fff;border-radius:12px;padding:12px;font-size:17px;font-weight:800;cursor:pointer}
+.producto:hover{background:#f2f2f2}
+.pedido-panel{position:sticky;top:15px;height:max-content}
+.destino-actual{background:#f0f0f0;border-radius:10px;padding:13px;font-weight:800;margin-bottom:12px}
+.campo{margin-bottom:12px}
+.campo label{display:block;font-weight:800;margin-bottom:6px}
+input,textarea,select{width:100%;border:1px solid #bbb;border-radius:9px;padding:11px;font-size:16px;background:#fff}
+.retiro-opciones{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.retiro-opcion{border:1px solid #bbb;background:#eee;border-radius:9px;padding:11px;font-weight:800;cursor:pointer;text-align:center}
+.retiro-opcion.activa{background:#111;color:#fff;border-color:#111}
+#programadoBox{display:none;background:#f7f7f7;border-radius:10px;padding:10px;margin-top:8px}
+#programadoBox.visible{display:block}
+.retiro-fecha-hora{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.lista-pedido{max-height:390px;overflow:auto}
+.item-pedido{border:1px solid #ddd;border-radius:10px;padding:12px;margin-bottom:9px}
+.item-pedido strong{display:block;font-size:16px}
+.modificaciones{font-size:14px;margin-top:5px;line-height:1.45}
+.editar,.eliminar{border:0;border-radius:7px;padding:7px 10px;margin-top:9px;font-weight:800;cursor:pointer}
+.editar{background:#e5e5e5}
+.eliminar{background:#ddd}
+textarea{resize:vertical;min-height:80px}
+#enviar{width:100%;border:0;border-radius:10px;background:#111;color:#fff;padding:16px;font-size:18px;font-weight:900;cursor:pointer}
+#mensaje{font-weight:800;margin-top:10px;min-height:20px}
+#modalFondo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:15px;z-index:20}
+.modal{background:#fff;border-radius:15px;width:min(620px,100%);max-height:90vh;overflow:auto;padding:20px}
+.modal h2{margin-bottom:8px}
+.receta{font-size:14px;background:#f3f3f3;border-radius:8px;padding:9px;margin-bottom:10px}
+.opcion{display:flex;align-items:center;gap:10px;border:1px solid #ddd;border-radius:9px;padding:12px;margin-bottom:7px;cursor:pointer}
+.opcion input{width:auto;transform:scale(1.25)}
+.guarniciones{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.guarnicion{min-height:65px;font-size:18px;font-weight:bold;padding:14px;background:#eee;border:0;border-radius:9px;cursor:pointer}
+.guarnicion.seleccionada{background:#111;color:#fff}
+.acciones-modal{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+.acciones-modal button{min-height:65px;font-size:19px;font-weight:bold;padding:14px;border:0;border-radius:9px;cursor:pointer}
+#cancelarModal{background:#ddd}
+#confirmarModal{background:#111;color:#fff}
+.modal .rapido{min-height:65px;font-size:19px;font-weight:bold;padding:14px;background:#eee;border:0;border-radius:9px;cursor:pointer}
+@media(max-width:1050px){.contenedor{grid-template-columns:1fr}.pedido-panel{position:static}.destinos-principales{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:650px){.productos{grid-template-columns:1fr 1fr}.destinos-principales{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header>
+    <span>DRUGSTORE LA ROTONDA — COMANDAS</span>
+    <button id="cerrarSesion">Cerrar sesión</button>
+</header>
+
+<div class="contenedor">
+<main class="panel">
+<h2>Destino</h2>
+
+<div class="destinos-principales">
+<button class="destino" data-destino="Mesa 1">Mesa 1</button>
+<button class="destino" data-destino="Mesa 2">Mesa 2</button>
+<button class="destino" data-destino="Mesa 3">Mesa 3</button>
+<button class="destino" data-destino="Mesa 4">Mesa 4</button>
+<button class="destino" data-destino="Mesa 5">Mesa 5</button>
+<button class="destino" data-destino="Mesa 6">Mesa 6</button>
+</div>
+
+<div id="mesasExtra">
+<button class="destino" data-destino="Mesa 7">Mesa 7</button>
+<button class="destino" data-destino="Mesa 8">Mesa 8</button>
+<button class="destino" data-destino="Mesa 9">Mesa 9</button>
+<button class="destino" data-destino="Mesa 10">Mesa 10</button>
+<button class="destino" data-destino="Mesa 11">Mesa 11</button>
+<button class="destino" data-destino="Mesa 12">Mesa 12</button>
+<button class="destino" data-destino="Mesa 13">Mesa 13</button>
+<button class="destino" data-destino="Mesa 14">Mesa 14</button>
+<button class="destino" data-destino="Mesa 15">Mesa 15</button>
+<button class="destino" data-destino="Mesa 16">Mesa 16</button>
+<button class="destino" data-destino="Mesa 17">Mesa 17</button>
+<button class="destino" data-destino="Mesa 18">Mesa 18</button>
+<button class="destino" data-destino="Mesa 19">Mesa 19</button>
+<button class="destino" data-destino="Mesa 20">Mesa 20</button>
+</div>
+
+<button id="botonMasMesas">+ MÁS MESAS</button>
+<button class="destino-llevar" data-destino="Para llevar">🛍️ PARA LLEVAR</button>
+
+<div class="categorias">
+<button class="categoria" data-categoria="empanadas">Empanadas</button>
+<button class="categoria" data-categoria="sandwiches">Sándwiches</button>
+<button class="categoria" data-categoria="hamburguesas">Hamburguesas</button>
+<button class="categoria" data-categoria="platos">Al plato</button>
+<button class="categoria" data-categoria="miga">Miga</button>
+<button class="categoria" data-categoria="baguettes">Baguettes</button>
+<button class="categoria" data-categoria="tartas">Tartas</button>
+<button class="categoria" data-categoria="pizzas">Pizzas</button>
+</div>
+
+<div id="productos" class="productos"></div>
+</main>
+
+<aside class="panel pedido-panel">
+<h2>Comanda</h2>
+<div id="pedidoDestino" class="destino-actual">Seleccioná una mesa o Para llevar</div>
+
+<div id="clienteBox" class="campo" style="display:none">
+<label for="cliente">Nombre y apellido</label>
+<input id="cliente" type="text" placeholder="Ej.: María González" autocomplete="off">
+</div>
+
+<div id="retiroBox" class="campo" style="display:none">
+<label>Retiro</label>
+<div class="retiro-opciones">
+<button type="button" class="retiro-opcion activa" data-modo="ahora">AHORA</button>
+<button type="button" class="retiro-opcion" data-modo="programado">PROGRAMADO</button>
+</div>
+
+<div id="programadoBox">
+<div class="retiro-fecha-hora">
+<div>
+<label for="retiroFecha">Fecha</label>
+<input id="retiroFecha" type="date">
+</div>
+<div>
+<label for="retiroHora">Hora</label>
+<input id="retiroHora" type="time">
+</div>
+</div>
+</div>
+</div>
+
+<div id="listaPedido" class="lista-pedido"><p>No hay productos agregados.</p></div>
+
+<div class="campo">
+<label for="observacion">Observación</label>
+<textarea id="observacion" placeholder="Indicaciones generales para cocina..."></textarea>
+</div>
+
+<button id="enviar">ENVIAR A COCINA</button>
+<div id="mensaje"></div>
+</aside>
+</div>
+
+<div id="modalFondo">
+<div class="modal">
+<h2 id="modalTitulo"></h2>
+<div id="modalContenido"></div>
+<div class="acciones-modal">
+<button id="cancelarModal">Cancelar</button>
+<button id="confirmarModal">Agregar</button>
+</div>
+</div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
