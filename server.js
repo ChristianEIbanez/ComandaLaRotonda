@@ -146,8 +146,7 @@ app.get("/", (req, res, next) => {
     const token = obtenerToken(req);
 
     if (!token || !sesiones.has(token)) {
-        return res.redirect("/login.html?redirect=/cocina.html");
-    }
+return res.redirect("/login.html?redirect=/");    }
 
     next();
 });
