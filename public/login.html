@@ -156,7 +156,10 @@
                     return;
                 }
 
-                window.location.href = "/";
+                const parametros = new URLSearchParams(window.location.search);
+                const destino = parametros.get("redirect") || "/";
+
+                    window.location.href = destino;
 
             } catch (error) {
                 mensaje.textContent =

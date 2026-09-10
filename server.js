@@ -146,7 +146,7 @@ app.get("/", (req, res, next) => {
     const token = obtenerToken(req);
 
     if (!token || !sesiones.has(token)) {
-        return res.sendFile(path.join(__dirname, "public", "login.html"));
+        return res.redirect("/login.html?redirect=/cocina.html");
     }
 
     next();
