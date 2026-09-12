@@ -6,275 +6,75 @@
 <title>Cocina - Comandas</title>
 <style>
 *{box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
 body{margin:0;background:#0d0d0d;color:#fff;font-family:Arial,Helvetica,sans-serif}
-header{padding:12px 20px;background:#050505;border-bottom:1px solid #2b2b2b;display:flex;justify-content:space-between;align-items:center;gap:18px;position:sticky;top:0;z-index:10}
-.header-left{display:flex;align-items:center;gap:20px;min-width:0}
-.titulo{font-size:28px;font-weight:900;letter-spacing:.3px}
-.reloj{font-size:20px;font-weight:800;white-space:nowrap}
-.header-actions{display:flex;align-items:center;gap:10px}
-.btn-sonido,.btn-logout{width:auto;margin:0;padding:10px 13px;border:1px solid #444;border-radius:8px;background:#171717;color:#fff;font-size:13px;font-weight:900}
-.btn-sonido.activo{border-color:#4caf50}
-main{padding:20px;max-width:1920px;margin:auto}
-.seccion{margin-bottom:32px}
-.seccion h2{margin:0 0 14px;font-size:24px;font-weight:900}
-.contador{font-size:15px;color:#aaa;vertical-align:middle}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(430px,1fr));gap:18px;align-items:start}
-.pedido{background:#181818;border:2px solid #383838;border-radius:15px;padding:17px;box-shadow:0 5px 18px rgba(0,0,0,.22)}
-.pedido.ahora{border-color:#fff}
-.pedido.proximamente{opacity:.68}
-.pedido.preparar{border-width:3px}
-.pedido.urgente{border-width:4px}
-.pedido.demorado{border-width:4px}
-.pedido.nueva{animation:nuevaComanda 1s ease-in-out 5;box-shadow:0 0 0 2px #fff}
-.pedido.en-marcha{border-color:#5aa9ff}
-
-@keyframes nuevaComanda{
-    0%,100%{transform:scale(1)}
-    50%{transform:scale(1.012)}
-}
-
-.cabecera{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    gap:12px
-}
-
-.numero{
-    font-size:40px;
-    line-height:1;
-    font-weight:900
-}
-
-.estado{
-    font-size:15px;
-    font-weight:900;
-    border:1px solid #555;
-    border-radius:8px;
-    padding:8px 10px;
-    text-align:center;
-    white-space:nowrap
-}
-
-.contexto{
-    display:flex;
-    align-items:center;
-    gap:18px;
-    flex-wrap:wrap;
-    margin-top:9px;
-    padding-bottom:11px;
-    border-bottom:1px solid #303030
-}
-
-.destino,.cliente{
-    font-size:17px;
-    font-weight:900
-}
-
-.horario{
-    font-size:16px;
-    font-weight:900;
-    margin:11px 0 0
-}
-
-.meta{
-    font-size:12px;
-    color:#8f8f8f;
-    margin:5px 0 8px
-}
-
-.tiempo-pedido{
-    font-size:15px;
-    color:#aaa;
-    font-weight:800;
-    margin:10px 0 4px
-}
-
-.meta strong{
-    color:#c9c9c9
-}
-
-.productos{
-    margin-top:9px
-}
-
-.producto{
-    padding:15px 0 13px;
-    border-top:2px solid #3a3a3a
-}
-
-.producto:last-child{
-    border-bottom:1px solid #333
-}
-
-.producto strong{
-    display:block;
-    font-size:29px;
-    line-height:1.12;
-    font-weight:900
-}
-
-.cantidad{
-    font-size:38px;
-    font-weight:900;
-    margin-right:7px
-}
-
-.nombre-producto{
-    font-size:29px;
-    font-weight:900
-}
-
-.detalle{
-    font-size:17px;
-    color:#eee;
-    margin-top:7px;
-    line-height:1.4;
-    font-weight:700
-}
-
-.observacion{
-    margin-top:14px;
-    padding:13px;
-    border-radius:9px;
-    background:#292929;
-    border-left:5px solid #fff;
-    font-size:18px;
-    line-height:1.4;
-    font-weight:900
-}
-
-button{
-    width:100%;
-    border:0;
-    border-radius:9px;
-    padding:16px;
-    margin-top:14px;
-    font-size:17px;
-    font-weight:900;
-    cursor:pointer
-}
-
-.btn-listo,.btn-entregado{
-    background:#fff;
-    color:#111
-}
-
-.btn-marchar{
-    background:#ffd54a;
-    color:#111
-}
-
-.vacio{
-    color:#888;
-    font-size:17px;
-    padding:12px 0
-}
-
-@media(max-width:900px){
-    .grid{
-        grid-template-columns:1fr
-    }
-
-    .titulo{
-        font-size:22px
-    }
-
-    .reloj{
-        font-size:18px
-    }
-}
-
-@media(max-width:650px){
-    header{
-        flex-wrap:wrap
-    }
-
-    .header-left{
-        width:100%;
-        justify-content:space-between
-    }
-
-    .header-actions{
-        width:100%
-    }
-
-    .btn-sonido,.btn-logout{
-        flex:1
-    }
-
-    main{
-        padding:12px
-    }
-
-    .pedido{
-        padding:14px
-    }
-
-    .producto strong,.nombre-producto{
-        font-size:25px
-    }
-
-    .cantidad{
-        font-size:33px
-    }
-}
+header{height:68px;padding:10px 20px;background:#050505;border-bottom:1px solid #2b2b2b;display:flex;justify-content:space-between;align-items:center;gap:18px;position:relative;z-index:10}
+.titulo{font-size:28px;font-weight:900;letter-spacing:.3px}.reloj{font-size:20px;font-weight:800;white-space:nowrap}.btn-logout{border:1px solid #555;background:#151515;color:#fff;border-radius:7px;padding:8px 12px;font-size:13px;font-weight:900;cursor:pointer}.btn-logout:hover{background:#222}.header-derecha{display:flex;align-items:center;gap:12px}
+main{height:calc(100vh - 68px);padding:14px 16px;max-width:2200px;margin:auto;display:grid;grid-template-columns:2fr 2fr 1fr;gap:14px;min-height:0}
+.seccion{min-width:0;min-height:0;background:#111;border:1px solid #282828;border-radius:12px;padding:11px;display:flex;flex-direction:column;overflow:hidden}
+.seccion h2{flex:0 0 auto;margin:0 0 9px;padding:0 4px;font-size:20px;font-weight:900;line-height:1.1;white-space:nowrap}.contador{font-size:14px;color:#999;vertical-align:middle}
+.grid{flex:1;min-height:0;display:grid;gap:8px;overflow:hidden}
+.grid.cantidad-1{grid-template-rows:minmax(0,1fr)}
+.grid.cantidad-2{grid-template-rows:repeat(2,minmax(0,1fr))}
+.grid.cantidad-3{grid-template-rows:repeat(3,minmax(0,1fr))}
+.grid.cantidad-muchos{grid-template-rows:repeat(5,minmax(0,1fr));grid-auto-rows:minmax(48px,auto)}
+.grid.cantidad-muchos .pedido{padding:8px 10px}
+.grid.cantidad-muchos .producto{padding:6px 0 5px}
+.grid.cantidad-muchos .producto strong{font-size:19px}
+.grid.cantidad-muchos .cantidad{font-size:25px}
+.grid.cantidad-muchos .nombre-producto{font-size:19px}
+.grid.cantidad-muchos .detalle{font-size:12px}
+.grid.cantidad-muchos .tiempo-pedido{font-size:12px;margin:4px 0 1px}
+.grid.cantidad-muchos .pedido{padding:7px 9px}
+.grid.cantidad-muchos .cabecera{flex:0 0 auto}
+.grid.cantidad-muchos .numero{font-size:27px}
+.grid.cantidad-muchos .estado{font-size:10px;padding:4px 6px}
+.grid.cantidad-muchos .contexto{margin-top:3px;padding-bottom:3px;gap:7px;flex:0 0 auto}
+.grid.cantidad-muchos .destino,.grid.cantidad-muchos .cliente{font-size:13px}
+.grid.cantidad-muchos .tiempo-pedido,.grid.cantidad-muchos .horario,.grid.cantidad-muchos .meta,.grid.cantidad-muchos .observacion{display:none}
+.grid.cantidad-muchos .productos{flex:1 1 auto;min-height:0;margin-top:3px;display:flex;align-items:flex-start}
+.grid.cantidad-muchos .producto{padding:2px 0 0;border-top:0;overflow:hidden}
+.grid.cantidad-muchos .producto:not(:first-child){display:none}
+.grid.cantidad-muchos .producto strong{font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.grid.cantidad-muchos .cantidad{font-size:23px}
+.grid.cantidad-muchos .nombre-producto{font-size:18px}
+.grid.cantidad-muchos .detalle{display:none}
+.grid.cantidad-muchos .pedido button{padding:8px;margin-top:5px;font-size:13px;min-height:34px}
+.pedido{min-height:0;background:#181818;border:2px solid #383838;border-radius:10px;padding:11px;box-shadow:0 4px 14px rgba(0,0,0,.22);display:flex;flex-direction:column;overflow:hidden}
+.pedido.ahora{border-color:#fff}.pedido.proximamente{opacity:.68}.pedido.preparar{border-width:3px}.pedido.urgente{border-width:4px}.pedido.demorado{border-width:4px}.pedido.nueva{animation:nuevaComanda 1s ease-in-out 5;box-shadow:0 0 0 2px #fff}
+@keyframes nuevaComanda{0%,100%{transform:scale(1)}50%{transform:scale(1.012)}}
+.cabecera{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}.numero{font-size:34px;line-height:1;font-weight:900}.estado{font-size:12px;font-weight:900;border:1px solid #555;border-radius:6px;padding:6px 8px;text-align:center;white-space:nowrap}
+.contexto{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:7px;padding-bottom:7px;border-bottom:1px solid #303030}.destino,.cliente{font-size:15px;font-weight:900}.horario{font-size:14px;font-weight:900;margin:7px 0 0}.meta{font-size:11px;color:#aaa;margin:4px 0 5px}.tiempo-pedido{font-size:13px;color:#aaa;font-weight:800;margin:6px 0 2px}
+.productos{margin-top:5px;min-height:0;overflow:hidden}.producto{padding:8px 0 7px;border-top:1px solid #3a3a3a}.producto:last-child{border-bottom:1px solid #333}.producto strong{display:block;font-size:22px;line-height:1.08;font-weight:900}.cantidad{font-size:29px;font-weight:900;margin-right:5px}.nombre-producto{font-size:22px;font-weight:900}.detalle{font-size:14px;color:#eee;margin-top:4px;line-height:1.25;font-weight:700}
+.observacion{margin-top:8px;padding:9px;border-radius:7px;background:#292929;border-left:4px solid #fff;font-size:14px;line-height:1.25;font-weight:900}.pedido button{width:100%;border:0;border-radius:7px;padding:12px;margin-top:auto;font-size:14px;font-weight:900;cursor:pointer;flex:0 0 auto}.btn-listo,.btn-entregado,.btn-marchar{background:#fff;color:#111}.en-marcha{border-left:5px solid #5aa9ff}.listo{border-left:5px solid #63c174}
+.pedido.compacto{padding:7px 9px;display:block}.pedido.compacto .cabecera{align-items:center}.pedido.compacto .numero{font-size:25px}.pedido.compacto .estado{font-size:10px;padding:4px 6px}.pedido.compacto .contexto{margin-top:4px;padding-bottom:3px;gap:7px}.pedido.compacto .destino,.pedido.compacto .cliente{font-size:12px}.pedido.compacto .tiempo-pedido,.pedido.compacto .horario,.pedido.compacto .meta,.pedido.compacto .observacion{display:none}.pedido.compacto .productos{margin-top:2px;display:flex;gap:8px}.pedido.compacto .producto{border:0;padding:0}.pedido.compacto .producto:not(:first-child){display:none}.pedido.compacto .producto strong{font-size:15px}.pedido.compacto .cantidad{font-size:18px}.pedido.compacto .nombre-producto{font-size:15px}.pedido.compacto button{padding:6px;margin-top:5px;font-size:11px}
+.vacio{color:#666;font-size:14px;padding:10px 4px}
+@media(max-width:1100px){main{grid-template-columns:1fr;overflow:auto;height:auto;min-height:calc(100vh - 68px)}html,body{overflow:auto}.seccion{min-height:500px}.grid.cantidad-muchos{grid-template-rows:repeat(3,180px);overflow:auto}.titulo{font-size:22px}}
+@media(max-width:650px){header{height:auto;padding:10px 12px}.header-derecha{gap:7px}.btn-logout{padding:7px 9px;font-size:11px}.reloj{font-size:17px}main{padding:10px}.seccion{min-height:420px}.pedido{padding:10px}.producto strong{font-size:20px}.cantidad{font-size:26px}.nombre-producto{font-size:20px}}
 </style>
 </head>
-
 <body>
-
 <header>
-    <div class="titulo">COCINA — COMANDAS</div>
-    <div id="reloj" class="reloj"></div>
+<div class="titulo">COCINA — COMANDAS</div>
+<div class="header-derecha"><div id="reloj" class="reloj"></div><button class="btn-logout" type="button" onclick="cerrarSesion()">CERRAR SESIÓN</button></div>
 </header>
-
 <main>
-
 <section class="seccion">
-    <h2>
-        🟡 POR PREPARAR
-        <span id="contadorPendientes" class="contador"></span>
-    </h2>
-
-    <div id="pendientes" class="grid"></div>
-
-    <div id="vacioPendientes" class="vacio">
-        No hay pedidos pendientes.
-    </div>
+<h2>🟡 POR PREPARAR <span id="contadorPendientes" class="contador"></span></h2>
+<div id="pendientes" class="grid cantidad-1"></div>
+<div id="vacioPendientes" class="vacio">No hay pedidos pendientes.</div>
 </section>
-
-
 <section class="seccion">
-    <h2>
-        🔵 EN MARCHA
-        <span id="contadorEnMarcha" class="contador"></span>
-    </h2>
-
-    <div id="enMarcha" class="grid"></div>
-
-    <div id="vacioEnMarcha" class="vacio">
-        No hay pedidos en marcha.
-    </div>
+<h2>🔵 EN MARCHA <span id="contadorEnMarcha" class="contador"></span></h2>
+<div id="enMarcha" class="grid cantidad-1"></div>
+<div id="vacioEnMarcha" class="vacio">No hay pedidos en preparación.</div>
 </section>
-
-
 <section class="seccion">
-    <h2>
-        🟢 LISTOS PARA ENTREGAR
-        <span id="contadorListos" class="contador"></span>
-    </h2>
-
-    <div id="listos" class="grid"></div>
-
-    <div id="vacioListos" class="vacio">
-        No hay pedidos esperando retiro.
-    </div>
+<h2>🟢 LISTOS <span id="contadorListos" class="contador"></span></h2>
+<div id="listos" class="grid cantidad-1"></div>
+<div id="vacioListos" class="vacio">No hay pedidos esperando retiro.</div>
 </section>
-
 </main>
-
-
 <script>
 
 let pedidos = [];
@@ -285,11 +85,6 @@ const pendientes = document.getElementById("pendientes");
 const enMarcha = document.getElementById("enMarcha");
 const listos = document.getElementById("listos");
 
-
-// ======================================================
-// SEGURIDAD HTML
-// ======================================================
-
 function escapeHtml(text){
     return String(text ?? "")
         .replaceAll("&","&amp;")
@@ -299,125 +94,60 @@ function escapeHtml(text){
         .replaceAll("'","&#039;");
 }
 
-
-// ======================================================
-// FECHAS
-// ======================================================
-
 function fechaLocal(iso){
     return new Date(iso);
 }
 
 function minutosHasta(date){
-    return Math.round(
-        (date.getTime() - Date.now()) / 60000
-    );
+    return Math.round((date.getTime() - Date.now()) / 60000);
 }
 
 function formatoDuracion(ms){
-
-    const totalMinutos = Math.max(
-        0,
-        Math.ceil(ms / 60000)
-    );
-
+    const totalMinutos = Math.max(0, Math.ceil(ms / 60000));
     const dias = Math.floor(totalMinutos / 1440);
-
-    const horas = Math.floor(
-        (totalMinutos % 1440) / 60
-    );
-
+    const horas = Math.floor((totalMinutos % 1440) / 60);
     const minutos = totalMinutos % 60;
-
     const partes = [];
 
-    if(dias > 0){
-        partes.push(
-            `${dias} ${dias === 1 ? "día" : "días"}`
-        );
-    }
-
-    if(horas > 0){
-        partes.push(
-            `${horas} ${horas === 1 ? "hora" : "horas"}`
-        );
-    }
-
+    if(dias > 0) partes.push(`${dias} ${dias === 1 ? "día" : "días"}`);
+    if(horas > 0) partes.push(`${horas} ${horas === 1 ? "hora" : "horas"}`);
     if(minutos > 0 || partes.length === 0){
-        partes.push(
-            `${minutos} ${minutos === 1 ? "minuto" : "minutos"}`
-        );
+        partes.push(`${minutos} ${minutos === 1 ? "minuto" : "minutos"}`);
     }
 
-    if(partes.length === 1){
-        return partes[0];
-    }
-
-    if(partes.length === 2){
-        return `${partes[0]} y ${partes[1]}`;
-    }
-
+    if(partes.length === 1) return partes[0];
+    if(partes.length === 2) return `${partes[0]} y ${partes[1]}`;
     return `${partes[0]}, ${partes[1]} y ${partes[2]}`;
 }
 
-
-// ======================================================
-// TIEMPO DESDE QUE LLEGÓ EL PEDIDO
-// ======================================================
-
-function fechaPedido(pedido){
-    return new Date(pedido.creadoAt);
+function tieneEmpanadas(pedido){
+    return pedido.productos.some(p => p.nombre.toLowerCase().includes("empanada"));
 }
 
 function tiempoDesdePedido(pedido){
-
     const creado = fechaPedido(pedido);
-
-    const minutos = Math.floor(
-        Math.max(
-            0,
-            Date.now() - creado.getTime()
-        ) / 60000
-    );
+    const minutos = Math.floor(Math.max(0, Date.now() - creado.getTime()) / 60000);
 
     if(minutos === 0){
         return "AHORA";
     }
 
     if(minutos < 60){
-        return `Hace ${minutos} ${
-            minutos === 1 ? "minuto" : "minutos"
-        }`;
+        return `Hace ${minutos} ${minutos === 1 ? "minuto" : "minutos"}`;
     }
 
     const horas = Math.floor(minutos / 60);
-
     const minutosRestantes = minutos % 60;
 
     if(minutosRestantes === 0){
-        return `Hace ${horas} ${
-            horas === 1 ? "hora" : "horas"
-        }`;
+        return `Hace ${horas} ${horas === 1 ? "hora" : "horas"}`;
     }
 
-    return `Hace ${horas} ${
-        horas === 1 ? "hora" : "horas"
-    } y ${minutosRestantes} ${
-        minutosRestantes === 1 ? "minuto" : "minutos"
-    }`;
+    return `Hace ${horas} ${horas === 1 ? "hora" : "horas"} y ${minutosRestantes} ${minutosRestantes === 1 ? "minuto" : "minutos"}`;
 }
 
-
-// ======================================================
-// URGENCIA
-// ======================================================
-
 function datosUrgencia(pedido){
-
-    if(
-        pedido.modoRetiro !== "programado" ||
-        !pedido.retiroAt
-    ){
+    if (pedido.modoRetiro !== "programado" || !pedido.retiroAt){
         return {
             clase:"ahora",
             texto:"AHORA",
@@ -427,16 +157,10 @@ function datosUrgencia(pedido){
     }
 
     const retiro = fechaLocal(pedido.retiroAt);
-
-    const inicio = new Date(
-        retiro.getTime() -
-        TIEMPO_PREPARACION * 60000
-    );
-
+    const inicio = new Date(retiro.getTime() - TIEMPO_PREPARACION * 60000);
     const faltanRetiro = minutosHasta(retiro);
 
-    if(faltanRetiro < 0){
-
+    if (faltanRetiro < 0){
         return {
             clase:"demorado",
             texto:"🚨 DEMORADO",
@@ -445,28 +169,21 @@ function datosUrgencia(pedido){
         };
     }
 
-    if(faltanRetiro <= 10){
-
+    if (faltanRetiro <= 10){
         return {
             clase:"urgente",
             texto:"🚨 URGENTE",
             prioridad:-3,
-            detalle:`Retiro en ${Math.max(
-                0,
-                faltanRetiro
-            )} min`
+            detalle:`Retiro en ${Math.max(0,faltanRetiro)} min`
         };
     }
 
-    if(Date.now() >= inicio.getTime()){
-
+    if (Date.now() >= inicio.getTime()){
         return {
             clase:"preparar",
             texto:"🔴 PREPARAR AHORA",
             prioridad:-2,
-            detalle:`Debe estar listo para ${
-                formatoHora(retiro)
-            }`
+            detalle:`Debe estar listo para ${formatoHora(retiro)}`
         };
     }
 
@@ -474,970 +191,355 @@ function datosUrgencia(pedido){
         clase:"proximamente",
         texto:"🟡 PRÓXIMAMENTE",
         prioridad:1,
-        detalle:`Comenzar en ${
-            formatoDuracion(
-                inicio.getTime() - Date.now()
-            )
-        }`
+        detalle:`Comenzar en ${formatoDuracion(inicio.getTime() - Date.now())}`
     };
 }
 
-
 function formatoHora(date){
-
-    return date.toLocaleTimeString(
-        "es-AR",
-        {
-            hour:"2-digit",
-            minute:"2-digit"
-        }
-    );
+    return date.toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
 }
-
 
 function formatoFecha(date){
-
-    return date.toLocaleDateString(
-        "es-AR",
-        {
-            day:"2-digit",
-            month:"2-digit"
-        }
-    );
+    return date.toLocaleDateString("es-AR",{day:"2-digit",month:"2-digit"});
 }
 
-
-// ======================================================
-// ORDENAR PEDIDOS PENDIENTES
-// ======================================================
+function fechaPedido(pedido){
+    return new Date(pedido.creadoAt);
+}
 
 function prioridad(pedido){
+    const u = datosUrgencia(pedido);
+    const retiro = pedido.retiroAt ? new Date(pedido.retiroAt).getTime() : 0;
+    const creado = new Date(pedido.creadoAt).getTime();
 
-    const retiro = pedido.retiroAt
-        ? new Date(pedido.retiroAt).getTime()
-        : 0;
-
-    const creado =
-        new Date(pedido.creadoAt).getTime();
-
-    if(pedido.modoRetiro !== "programado"){
-        return [0,0,creado];
+    if (pedido.modoRetiro !== "programado") {
+        return [0, 0, creado];
     }
 
-    const inicio =
-        retiro - TIEMPO_PREPARACION * 60000;
+    const inicio = retiro - TIEMPO_PREPARACION * 60000;
 
-    if(Date.now() >= inicio){
-        return [
-            1,
-            Math.max(0,retiro-Date.now()),
-            creado
-        ];
+    // Los programados que ya deben comenzar se colocan antes que los que aún esperan.
+    if (Date.now() >= inicio) {
+        return [1, Math.max(0,retiro-Date.now()), creado];
     }
 
-    return [
-        2,
-        inicio-Date.now(),
-        creado
-    ];
+    return [2, inicio-Date.now(), creado];
 }
 
-
 function ordenarPendientes(lista){
-
     return lista.sort((a,b)=>{
-
         const pa = prioridad(a);
         const pb = prioridad(b);
 
         for(let i=0;i<pa.length;i++){
-
-            if(pa[i] !== pb[i]){
-                return pa[i] - pb[i];
-            }
+            if(pa[i] !== pb[i]) return pa[i] - pb[i];
         }
-
         return 0;
     });
 }
 
-
-// ======================================================
-// RENDER GENERAL
-// ======================================================
-
-function render(){
-
-    const activos =
-        pedidos.filter(
-            p => p.estado !== "entregado"
-        );
-
-    const peds =
-        ordenarPendientes(
-            activos.filter(
-                p => p.estado === "pendiente"
-            )
-        );
-
-    const marcha =
-        activos
-            .filter(
-                p => p.estado === "en_marcha"
-            )
-            .sort(
-                (a,b)=>
-                    new Date(a.creadoAt) -
-                    new Date(b.creadoAt)
-            );
-
-    const list =
-        activos
-            .filter(
-                p => p.estado === "listo"
-            )
-            .sort(
-                (a,b)=>
-                    new Date(
-                        a.listoAt || a.creadoAt
-                    ) -
-                    new Date(
-                        b.listoAt || b.creadoAt
-                    )
-            );
-
-
-    pendientes.innerHTML =
-        peds.map(
-            renderPedidoPendiente
-        ).join("");
-
-    enMarcha.innerHTML =
-        marcha.map(
-            renderPedidoEnMarcha
-        ).join("");
-
-    listos.innerHTML =
-        list.map(
-            renderPedidoListo
-        ).join("");
-
-
-    document.getElementById(
-        "vacioPendientes"
-    ).style.display =
-        peds.length ? "none" : "block";
-
-
-    document.getElementById(
-        "vacioEnMarcha"
-    ).style.display =
-        marcha.length ? "none" : "block";
-
-
-    document.getElementById(
-        "vacioListos"
-    ).style.display =
-        list.length ? "none" : "block";
-
-
-    document.getElementById(
-        "contadorPendientes"
-    ).textContent =
-        `(${peds.length})`;
-
-
-    document.getElementById(
-        "contadorEnMarcha"
-    ).textContent =
-        `(${marcha.length})`;
-
-
-    document.getElementById(
-        "contadorListos"
-    ).textContent =
-        `(${list.length})`;
+function claseCantidad(lista){
+    if(lista.length <= 1) return "cantidad-1";
+    if(lista.length === 2) return "cantidad-2";
+    if(lista.length === 3) return "cantidad-3";
+    return "cantidad-muchos";
 }
 
+function render(){
+    const activos = pedidos.filter(p => p.estado !== "entregado");
+    const peds = ordenarPendientes(activos.filter(p => p.estado === "pendiente"));
+    const marcha = activos.filter(p => p.estado === "en_marcha")
+        .sort((a,b)=>new Date(a.creadoAt)-new Date(b.creadoAt));
+    const list = activos.filter(p => p.estado === "listo")
+        .sort((a,b)=>new Date(a.listoAt||a.creadoAt)-new Date(b.listoAt||b.creadoAt));
 
-// ======================================================
-// PRODUCTOS
-// ======================================================
+    pendientes.className = `grid ${claseCantidad(peds)}`;
+    enMarcha.className = `grid ${claseCantidad(marcha)}`;
+    listos.className = `grid ${claseCantidad(list)}`;
 
-function renderProductos(pedido){
+    pendientes.innerHTML = peds.map((p,i)=>renderPedidoPendiente(p,i,peds.length)).join("");
+    enMarcha.innerHTML = marcha.map((p,i)=>renderPedidoEnMarcha(p,i,marcha.length)).join("");
+    listos.innerHTML = list.map((p,i)=>renderPedidoListo(p,i,list.length)).join("");
 
+    document.getElementById("vacioPendientes").style.display = peds.length ? "none" : "block";
+    document.getElementById("vacioEnMarcha").style.display = marcha.length ? "none" : "block";
+    document.getElementById("vacioListos").style.display = list.length ? "none" : "block";
+
+    document.getElementById("contadorPendientes").textContent = `(${peds.length})`;
+    document.getElementById("contadorEnMarcha").textContent = `(${marcha.length})`;
+    document.getElementById("contadorListos").textContent = `(${list.length})`;
+}
+
+function renderProductos(pedido, compacto=false){
     return pedido.productos.map(p=>{
-
         let detalles = [];
-
-        if(p.preparacion){
-            detalles.push(p.preparacion);
-        }
-
-        if(p.guarnicion){
-            detalles.push(
-                "Guarnición: " +
-                p.guarnicion
-            );
-        }
-
-        detalles.push(
-            ...(p.modificaciones || [])
-        );
-
-        detalles.push(
-            ...(p.adicionales || [])
-                .map(
-                    a => "+ " + a
-                )
-        );
-
+        if(p.preparacion) detalles.push(p.preparacion);
+        if(p.guarnicion) detalles.push("Guarnición: "+p.guarnicion);
+        detalles.push(...(p.modificaciones||[]));
+        detalles.push(...(p.adicionales||[]).map(a=>"+ "+a));
 
         return `
         <div class="producto">
-
-            <strong>
-                <span class="cantidad">
-                    ${p.cantidad} ×
-                </span>
-
-                <span class="nombre-producto">
-                    ${escapeHtml(p.nombre)}
-                </span>
-            </strong>
-
-            ${
-                detalles.length
-                ? `
-                    <div class="detalle">
-                        ${detalles
-                            .map(escapeHtml)
-                            .join(" · ")}
-                    </div>
-                  `
-                : ""
-            }
-
-        </div>
-        `;
-
+            <strong><span class="cantidad">${p.cantidad} ×</span><span class="nombre-producto">${escapeHtml(p.nombre)}</span></strong>
+            ${detalles.length && !compacto ? `<div class="detalle">${detalles.map(escapeHtml).join(" · ")}</div>` : ""}
+        </div>`;
     }).join("");
 }
 
-
-// ======================================================
-// PEDIDO POR PREPARAR
-// ======================================================
-
-function renderPedidoPendiente(pedido){
-
-    const u =
-        datosUrgencia(pedido);
-
-    return `
-    <article
-        class="pedido ${u.clase}"
-        data-pedido-numero="${pedido.numero}"
-    >
-
-        <div class="cabecera">
-
-            <div class="numero">
-                #${pedido.numero}
-            </div>
-
-            <div class="estado">
-                ${u.texto}
-            </div>
-
-        </div>
-
-
-        <div class="contexto">
-
-            <div class="destino">
-                ${escapeHtml(pedido.destino)}
-            </div>
-
-            ${
-                pedido.cliente
-                ? `
-                    <div class="cliente">
-                        👤 ${escapeHtml(
-                            pedido.cliente
-                        )}
-                    </div>
-                  `
-                : ""
-            }
-
-        </div>
-
-
-        ${
-            pedido.modoRetiro === "programado" &&
-            pedido.retiroAt
-            ? `
-                <div class="horario">
-                    📅 Retiro:
-                    ${formatoFecha(
-                        new Date(pedido.retiroAt)
-                    )}
-                    ${formatoHora(
-                        new Date(pedido.retiroAt)
-                    )}
-                </div>
-              `
-            : ""
-        }
-
-
-        <div class="tiempo-pedido">
-            ${tiempoDesdePedido(pedido)}
-        </div>
-
-
-        ${
-            pedido.modoRetiro === "programado"
-            ? `
-                <div class="meta">
-                    <strong>
-                        ${escapeHtml(u.detalle)}
-                    </strong>
-                </div>
-              `
-            : ""
-        }
-
-
-        <div class="productos">
-            ${renderProductos(pedido)}
-        </div>
-
-
-        ${
-            pedido.observacion
-            ? `
-                <div class="observacion">
-                    ⚠️ ${escapeHtml(
-                        pedido.observacion
-                    )}
-                </div>
-              `
-            : ""
-        }
-
-
-        <button
-            class="btn-marchar"
-            onclick="marcharPedido(${pedido.numero})"
-        >
-            ▶ MARCHAR
-        </button>
-
-    </article>
-    `;
+function claseCompacta(indice,total){
+    return total > 5 && indice >= 5 ? " compacto" : "";
 }
 
-
-// ======================================================
-// PEDIDO EN MARCHA
-// ======================================================
-
-function renderPedidoEnMarcha(pedido){
+function renderPedidoPendiente(pedido,indice,total){
+    const u = datosUrgencia(pedido);
 
     return `
-    <article
-        class="pedido en-marcha"
-        data-pedido-numero="${pedido.numero}"
-    >
-
+    <article class="pedido ${u.clase}${claseCompacta(indice,total)}" data-pedido-id="${pedido.id}">
         <div class="cabecera">
-
-            <div class="numero">
-                #${pedido.numero}
-            </div>
-
-            <div class="estado">
-                🔵 EN MARCHA
-            </div>
-
+            <div class="numero">#${pedido.numero}</div>
+            <div class="estado">${u.texto}</div>
         </div>
-
 
         <div class="contexto">
-
-            <div class="destino">
-                ${escapeHtml(pedido.destino)}
-            </div>
-
-            ${
-                pedido.cliente
-                ? `
-                    <div class="cliente">
-                        👤 ${escapeHtml(
-                            pedido.cliente
-                        )}
-                    </div>
-                  `
-                : ""
-            }
-
+            <div class="destino">${escapeHtml(pedido.destino)}</div>
+            ${pedido.cliente ? `<div class="cliente">👤 ${escapeHtml(pedido.cliente)}</div>` : ""}
         </div>
 
+        ${pedido.modoRetiro === "programado" && pedido.retiroAt
+            ? `<div class="horario">📅 Retiro: ${formatoFecha(new Date(pedido.retiroAt))} ${formatoHora(new Date(pedido.retiroAt))}</div>`
+            : ""}
 
-        ${
-            pedido.modoRetiro === "programado" &&
-            pedido.retiroAt
-            ? `
-                <div class="horario">
-                    📅 Retiro:
-                    ${formatoFecha(
-                        new Date(pedido.retiroAt)
-                    )}
-                    ${formatoHora(
-                        new Date(pedido.retiroAt)
-                    )}
-                </div>
-              `
-            : ""
-        }
+        <div class="tiempo-pedido">${tiempoDesdePedido(pedido)}</div>
+        ${pedido.modoRetiro === "programado"
+            ? `<div class="meta"><strong>${escapeHtml(u.detalle)}</strong></div>`
+            : ""}
 
+        <div class="productos">${renderProductos(pedido,total>5 && indice>=5)}</div>
+        ${pedido.observacion && !(total>5 && indice>=5) ? `<div class="observacion">⚠️ ${escapeHtml(pedido.observacion)}</div>` : ""}
 
-        <div class="tiempo-pedido">
-            ${tiempoDesdePedido(pedido)}
-        </div>
-
-
-        <div class="productos">
-            ${renderProductos(pedido)}
-        </div>
-
-
-        ${
-            pedido.observacion
-            ? `
-                <div class="observacion">
-                    ⚠️ ${escapeHtml(
-                        pedido.observacion
-                    )}
-                </div>
-              `
-            : ""
-        }
-
-
-        <button
-            class="btn-listo"
-            onclick="marcarListo(${pedido.numero})"
-        >
-            ✓ PEDIDO LISTO
-        </button>
-
-    </article>
-    `;
+        <button class="btn-marchar" onclick="marcharPedido(${pedido.id})">▶ MARCHAR</button>
+    </article>`;
 }
 
+function renderPedidoEnMarcha(pedido,indice,total){
+    const compacto = total>5 && indice>=5;
+    return `
+    <article class="pedido en-marcha${compacto ? " compacto" : ""}" data-pedido-id="${pedido.id}">
+        <div class="cabecera">
+            <div class="numero">#${pedido.numero}</div>
+            <div class="estado">🔵 EN MARCHA</div>
+        </div>
 
-// ======================================================
-// PEDIDO LISTO
-// ======================================================
+        <div class="contexto">
+            <div class="destino">${escapeHtml(pedido.destino)}</div>
+            ${pedido.cliente ? `<div class="cliente">👤 ${escapeHtml(pedido.cliente)}</div>` : ""}
+        </div>
 
-function renderPedidoListo(pedido){
+        ${pedido.modoRetiro === "programado" && pedido.retiroAt
+            ? `<div class="horario">📅 Retiro: ${formatoHora(new Date(pedido.retiroAt))}</div>`
+            : ""}
 
-    const listo =
-        pedido.listoAt
-        ? new Date(pedido.listoAt)
-        : new Date();
+        <div class="tiempo-pedido">${tiempoDesdePedido(pedido)}</div>
+        <div class="productos">${renderProductos(pedido,compacto)}</div>
+        ${pedido.observacion && !compacto ? `<div class="observacion">⚠️ ${escapeHtml(pedido.observacion)}</div>` : ""}
 
-    const espera =
-        Math.max(
-            0,
-            Math.floor(
-                (
-                    Date.now() -
-                    listo.getTime()
-                ) / 60000
-            )
-        );
+        <button class="btn-listo" onclick="marcarListo(${pedido.id})">✓ PEDIDO LISTO</button>
+    </article>`;
+}
 
+function renderPedidoListo(pedido,indice,total){
+    const listo = pedido.listoAt ? new Date(pedido.listoAt) : new Date();
+    const espera = Math.max(0,Math.floor((Date.now()-listo.getTime())/60000));
+    const compacto = total>5 && indice>=5;
 
     return `
-    <article
-        class="pedido"
-        data-pedido-numero="${pedido.numero}"
-    >
-
+    <article class="pedido listo${compacto ? " compacto" : ""}" data-pedido-id="${pedido.id}">
         <div class="cabecera">
-
-            <div class="numero">
-                #${pedido.numero}
-            </div>
-
-            <div class="estado">
-                🟢 LISTO
-            </div>
-
+            <div class="numero">#${pedido.numero}</div>
+            <div class="estado">🟢 LISTO</div>
         </div>
-
 
         <div class="contexto">
-
-            <div class="destino">
-                ${escapeHtml(pedido.destino)}
-            </div>
-
-            ${
-                pedido.cliente
-                ? `
-                    <div class="cliente">
-                        👤 ${escapeHtml(
-                            pedido.cliente
-                        )}
-                    </div>
-                  `
-                : ""
-            }
-
+            <div class="destino">${escapeHtml(pedido.destino)}</div>
+            ${pedido.cliente ? `<div class="cliente">👤 ${escapeHtml(pedido.cliente)}</div>` : ""}
         </div>
 
+        ${pedido.modoRetiro === "programado" && pedido.retiroAt
+            ? `<div class="horario">📅 Retiro: ${formatoHora(new Date(pedido.retiroAt))}</div>`
+            : ""}
 
-        ${
-            pedido.modoRetiro === "programado" &&
-            pedido.retiroAt
-            ? `
-                <div class="horario">
-                    📅 Retiro:
-                    ${formatoHora(
-                        new Date(
-                            pedido.retiroAt
-                        )
-                    )}
-                </div>
-              `
-            : ""
-        }
+        <div class="meta">Esperando retiro: ${espera} min</div>
+        <div class="productos">${renderProductos(pedido,compacto)}</div>
+        ${pedido.observacion && !compacto ? `<div class="observacion">⚠️ ${escapeHtml(pedido.observacion)}</div>` : ""}
 
-
-        <div class="meta">
-            Esperando retiro: ${espera} min
-        </div>
-
-
-        <div class="productos">
-            ${renderProductos(pedido)}
-        </div>
-
-
-        ${
-            pedido.observacion
-            ? `
-                <div class="observacion">
-                    ⚠️ ${escapeHtml(
-                        pedido.observacion
-                    )}
-                </div>
-              `
-            : ""
-        }
-
-
-        <button
-            class="btn-entregado"
-            onclick="marcarEntregado(${pedido.numero})"
-        >
-            📦 PEDIDO ENTREGADO
-        </button>
-
-    </article>
-    `;
+        <button class="btn-entregado" onclick="marcarEntregado(${pedido.id})">📦 PEDIDO ENTREGADO</button>
+    </article>`;
 }
 
-
-// ======================================================
-// CAMBIO DE ESTADO
-// ======================================================
-
-async function cambiarEstado(numero,url){
-
-    const respuesta =
-        await fetch(
-            url,
-            {
-                method:"POST"
-            }
-        );
-
-    const resultado =
-        await respuesta.json();
+async function cambiarEstado(id,url){
+    const respuesta = await fetch(url,{method:"POST"});
+    const resultado = await respuesta.json();
 
     if(!resultado.ok){
-
-        alert(
-            resultado.mensaje ||
-            "No se pudo actualizar el pedido."
-        );
+        alert(resultado.mensaje || "No se pudo actualizar el pedido.");
     }
 }
 
-
-// ======================================================
-// MARCHAR
-// ======================================================
-
-async function marcharPedido(numero){
-
-    await cambiarEstado(
-        numero,
-        `/api/pedidos/${numero}/marchar`
-    );
+async function marcharPedido(id){
+    await cambiarEstado(id,`/api/pedidos/${id}/marchar`);
 }
 
-
-// ======================================================
-// LISTO
-// ======================================================
-
-async function marcarListo(numero){
-
-    await cambiarEstado(
-        numero,
-        `/api/pedidos/${numero}/listo`
-    );
+async function marcarListo(id){
+    await cambiarEstado(id,`/api/pedidos/${id}/listo`);
 }
 
-
-// ======================================================
-// ENTREGADO
-// ======================================================
-
-async function marcarEntregado(numero){
-
-    await cambiarEstado(
-        numero,
-        `/api/pedidos/${numero}/entregado`
-    );
+async function marcarEntregado(id){
+    await cambiarEstado(id,`/api/pedidos/${id}/entregado`);
 }
-
-
-// ======================================================
-// SONIDO
-// ======================================================
 
 let audioContext = null;
 let sonidoActivo = false;
 
-
 async function activarAudio(){
-
     try{
-
         if(!audioContext){
-
-            audioContext =
-                new (
-                    window.AudioContext ||
-                    window.webkitAudioContext
-                )();
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
         }
 
-
-        if(
-            audioContext.state !==
-            "running"
-        ){
-
+        if(audioContext.state !== "running"){
             await audioContext.resume();
         }
 
+        sonidoActivo = audioContext.state === "running";
 
-        sonidoActivo =
-            audioContext.state ===
-            "running";
-
-
-        const boton =
-            document.getElementById(
-                "btnSonido"
-            );
-
-
-        if(
-            boton &&
-            sonidoActivo
-        ){
-
-            boton.textContent =
-                "🔊 SONIDO ACTIVO";
-
-            boton.classList.add(
-                "activo"
-            );
+        const boton = document.getElementById("btnSonido");
+        if(boton && sonidoActivo){
+            boton.textContent = "🔊 SONIDO ACTIVO";
+            boton.classList.add("activo");
         }
 
-
         return sonidoActivo;
-
     }catch(error){
-
-        console.error(
-            "No se pudo activar el audio:",
-            error
-        );
-
+        console.error("No se pudo activar el audio:", error);
         return false;
     }
 }
 
+async function activarAudioManual(){
+    const activo = await activarAudio();
+
+    if(activo){
+        await sonidoNuevaComanda();
+    }
+}
 
 async function sonidoNuevaComanda(){
+    const activo = await activarAudio();
+    if(!activo || !audioContext) return;
 
-    const activo =
-        await activarAudio();
+    const ahora = audioContext.currentTime;
 
-    if(
-        !activo ||
-        !audioContext
-    ){
-        return;
-    }
-
-
-    const ahora =
-        audioContext.currentTime;
-
-
+    // Dos tonos cortos y bien diferenciados para una cocina.
     const notas = [
-
-        {
-            frecuencia:880,
-            inicio:0
-        },
-
-        {
-            frecuencia:1174,
-            inicio:0.18
-        }
-
+        {frecuencia:880, inicio:0},
+        {frecuencia:1174, inicio:0.18}
     ];
 
+    notas.forEach(nota => {
+        const oscilador = audioContext.createOscillator();
+        const ganancia = audioContext.createGain();
+        const inicio = ahora + nota.inicio;
 
-    notas.forEach(nota=>{
+        oscilador.type = "sine";
+        oscilador.frequency.setValueAtTime(nota.frecuencia, inicio);
 
-        const oscilador =
-            audioContext.createOscillator();
+        ganancia.gain.setValueAtTime(0.0001, inicio);
+        ganancia.gain.exponentialRampToValueAtTime(0.28, inicio + 0.025);
+        ganancia.gain.exponentialRampToValueAtTime(0.0001, inicio + 0.20);
 
-        const ganancia =
-            audioContext.createGain();
+        oscilador.connect(ganancia);
+        ganancia.connect(audioContext.destination);
 
-
-        const inicio =
-            ahora + nota.inicio;
-
-
-        oscilador.type =
-            "sine";
-
-
-        oscilador.frequency
-            .setValueAtTime(
-                nota.frecuencia,
-                inicio
-            );
-
-
-        ganancia.gain
-            .setValueAtTime(
-                0.0001,
-                inicio
-            );
-
-
-        ganancia.gain
-            .exponentialRampToValueAtTime(
-                0.28,
-                inicio + 0.025
-            );
-
-
-        ganancia.gain
-            .exponentialRampToValueAtTime(
-                0.0001,
-                inicio + 0.20
-            );
-
-
-        oscilador.connect(
-            ganancia
-        );
-
-        ganancia.connect(
-            audioContext.destination
-        );
-
-
-        oscilador.start(
-            inicio
-        );
-
-        oscilador.stop(
-            inicio + 0.21
-        );
-
+        oscilador.start(inicio);
+        oscilador.stop(inicio + 0.21);
     });
 }
 
+async function cerrarSesion(){
+    try{
+        await fetch("/api/logout",{method:"POST"});
+    }finally{
+        window.location.href = "/login.html?redirect=/cocina.html";
+    }
+}
 
-// ======================================================
-// EVENTOS EN TIEMPO REAL
-// ======================================================
+// El primer clic en la pantalla habilita el audio del navegador.
+document.addEventListener("click", () => {
+    if(!sonidoActivo) activarAudio();
+}, {once:true});
 
-const eventos =
-    new EventSource(
-        "/api/cocina"
-    );
+// Actualiza "AHORA", "Hace 1 minuto", "Hace 2 minutos", etc.
+setInterval(() => render(), 60000);
 
+const eventos = new EventSource("/api/cocina");
 
-eventos.onmessage = event =>{
-
-    const data =
-        JSON.parse(event.data);
-
+eventos.onmessage = event => {
+    const data = JSON.parse(event.data);
 
     if(data.tipo === "inicio"){
-
-        pedidos =
-            data.pedidos;
-
+        // Las comandas existentes NO generan sonido ni animación.
+        pedidos = data.pedidos;
         render();
-
         return;
     }
 
-
     if(data.pedido){
-
-        const indice =
-            pedidos.findIndex(
-                p =>
-                    p.numero ===
-                    data.pedido.numero
-            );
-
-
-        const esNueva =
-            indice === -1;
-
+        const indice = pedidos.findIndex(p => p.id === data.pedido.id);
+        const esNueva = indice === -1;
 
         if(esNueva){
-
-            pedidos.push(
-                data.pedido
-            );
-
+            pedidos.push(data.pedido);
         }else{
-
-            pedidos[indice] =
-                data.pedido;
+            pedidos[indice] = data.pedido;
         }
 
-
-        if(
-            data.pedido.estado ===
-            "entregado"
-        ){
-
-            pedidos =
-                pedidos.filter(
-                    p =>
-                        p.numero !==
-                        data.pedido.numero
-                );
+        if(data.pedido.estado === "entregado"){
+            pedidos = pedidos.filter(p => p.id !== data.pedido.id);
         }
-
 
         render();
 
-
-        if(
-            esNueva &&
-            data.pedido.estado ===
-            "pendiente"
-        ){
-
+        // Solo una comanda realmente nueva y pendiente dispara aviso.
+        if(esNueva && data.pedido.estado === "pendiente"){
             sonidoNuevaComanda();
 
-
-            const tarjeta =
-                document.querySelector(
-                    `[data-pedido-numero="${data.pedido.numero}"]`
-                );
-
+            const tarjeta = document.querySelector(
+                `[data-pedido-id="${data.pedido.id}"]`
+            );
 
             if(tarjeta){
+                tarjeta.classList.add("nueva");
 
-                tarjeta.classList.add(
-                    "nueva"
-                );
-
-
-                setTimeout(
-                    () => {
-
-                        tarjeta.classList.remove(
-                            "nueva"
-                        );
-
-                    },
-                    5200
-                );
+                setTimeout(() => {
+                    tarjeta.classList.remove("nueva");
+                }, 5200);
             }
         }
     }
 };
 
-
-eventos.onerror = () =>{
-
-    // EventSource intenta
-    // reconectar automáticamente.
-
+eventos.onerror = () => {
+    // EventSource intenta reconectar automáticamente.
 };
 
-
-// Actualizar tiempos cada minuto.
-
-setInterval(
-    () => render(),
-    60000
-);
-
-
-// Actualizar reloj.
-
 setInterval(()=>{
-
-    document.getElementById(
-        "reloj"
-    ).textContent =
-
-        new Date().toLocaleTimeString(
-            "es-AR",
-            {
-                hour:"2-digit",
-                minute:"2-digit",
-                second:"2-digit"
-            }
-        );
-
+    document.getElementById("reloj").textContent =
+        new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
     render();
-
 },1000);
-
 
 render();
 
 </script>
-
 </body>
 </html>

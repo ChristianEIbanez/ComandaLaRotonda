@@ -145,7 +145,7 @@ function abrirConfiguracion(producto, existente = null, indice = null) {
 
     cantidadConfigurando = existente
         ? existente.cantidad
-        : producto.tipo === "empanada" ? 6 : 1;
+        : producto.tipo === "empanada" ? 0 : 1;
 
     const contenido = document.getElementById("modalContenido");
     contenido.innerHTML = "";
@@ -419,30 +419,49 @@ function mostrarPedido() {
 
     if (!pedidoActual.length) {
         lista.innerHTML = "<p>No hay productos agregados.</p>";
+        actualizarDemoraEmpanadas();
         return;
     }
 
-    pedidoActual.forEach((producto,index) => {
+    pedidoActual.forEach((producto, index) => {
         const div = document.createElement("div");
         div.className = "item-pedido";
 
         let detalles = [];
-        if (producto.preparacion) detalles.push(producto.preparacion);
-        if (producto.guarnicion) detalles.push("Guarnición: " + producto.guarnicion);
+
+        if (producto.preparacion) {
+            detalles.push(producto.preparacion);
+        }
+
+        if (producto.guarnicion) {
+            detalles.push("Guarnición: " + producto.guarnicion);
+        }
+
         detalles.push(...(producto.modificaciones || []));
-        detalles.push(...(producto.adicionales || []).map(a => "+ " + a));
+        detalles.push(
+            ...(producto.adicionales || []).map(a => "+ " + a)
+        );
 
         div.innerHTML = `
             <strong>${producto.cantidad} × ${escapeHtml(producto.nombre)}</strong>
-            ${detalles.length ? `<div class="modificaciones">${detalles.map(escapeHtml).join("<br>")}</div>` : ""}
-            <button class="editar" onclick="editarProducto(${index})">Editar</button>
-            <button class="eliminar" onclick="eliminarProducto(${index})">Eliminar</button>
+            ${
+                detalles.length
+                    ? `<div class="modificaciones">${detalles.map(escapeHtml).join("<br>")}</div>`
+                    : ""
+            }
+            <button class="editar" onclick="editarProducto(${index})">
+                Editar
+            </button>
+            <button class="eliminar" onclick="eliminarProducto(${index})">
+                Eliminar
+            </button>
         `;
 
         lista.appendChild(div);
     });
-}
 
+    actualizarDemoraEmpanadas();
+}
 function editarProducto(index) {
     const pedido = pedidoActual[index];
     const producto = productos.find(p => p.nombre === pedido.nombre);
@@ -471,16 +490,16 @@ document.getElementById("enviar").addEventListener("click", async () => {
         return;
     }
 
-let cliente = "";
-if (destinoSeleccionado === "Para llevar") {
-    cliente = document.getElementById("cliente").value.trim();
+    let cliente = "";
+    if (destinoSeleccionado === "Para llevar") {
+        cliente = document.getElementById("cliente").value.trim();
 
-    if (!cliente) {
-        mensaje.textContent = "⚠️ Ingresá el nombre del cliente.";
-        document.getElementById("cliente").focus();
-        return;
+        if (!cliente) {
+            mensaje.textContent = "⚠️ Ingresá el nombre del cliente.";
+            document.getElementById("cliente").focus();
+            return;
+        }
     }
-}
 
     let retiroFecha = null;
     let retiroHora = null;
@@ -523,7 +542,11 @@ if (destinoSeleccionado === "Para llevar") {
             return;
         }
 
-        mensaje.textContent = `✅ Pedido #${resultado.pedido.numero} enviado a cocina.`;
+        if (resultado.demoraEmpanadas > 0) {
+            mensaje.textContent = `🥟 Pedido #${resultado.pedido.numero} enviado a cocina. Demora estimada de empanadas: ${resultado.demoraEmpanadas} minutos.`;
+        } else {
+            mensaje.textContent = `✅ Pedido #${resultado.pedido.numero} enviado a cocina.`;
+        }
 
         pedidoActual = [];
         destinoSeleccionado = null;
@@ -559,20 +582,516 @@ function escapeHtml(text) {
 
 document.querySelector('.categoria[data-categoria="empanadas"]').click();
 mostrarPedido();
-// ======================================================
-// CERRAR SESIÓN
-// ======================================================
 
-const cerrarSesion = document.getElementById("cerrarSesion");
-
-if (cerrarSesion) {
-    cerrarSesion.addEventListener("click", async () => {
+// Cerrar sesión desde Comandas
+const botonCerrarSesion = document.getElementById("cerrarSesion");
+if (botonCerrarSesion) {
+    botonCerrarSesion.addEventListener("click", async () => {
+        botonCerrarSesion.disabled = true;
+        botonCerrarSesion.textContent = "Cerrando...";
         try {
-            await fetch("/api/logout", {
-                method: "POST"
-            });
+            await fetch("/api/logout", { method: "POST" });
         } finally {
-            window.location.href = "/";
+            window.location.href = "/login.html?redirect=/";
         }
     });
+}
+
+// =====================================================
+// =====================================================
+// PEDIDOS DE HOY + HISTORIAL - COMANDAS
+// =====================================================
+let pedidosHoy = [];
+let historialPedidos = [];
+
+function obtenerContenedorPedidosHoy() {
+    const contenedor = document.getElementById("pedidosHoyLista");
+    if (contenedor) return contenedor;
+
+    console.error("No existe #pedidosHoyLista en index.html.");
+    return null;
+}
+
+function obtenerContenedorHistorial() {
+    let historial = document.getElementById("historialPedidosLista");
+    if (historial) return historial;
+
+    const box = document.getElementById("pedidosHoyBox");
+    if (!box) return null;
+
+    const titulo = document.createElement("div");
+    titulo.id = "historialPedidosTitulo";
+    titulo.style.cssText = "font-size:18px;font-weight:800;margin:18px 0 10px;";
+    titulo.innerHTML = `📋 HISTORIAL DE HOY · <span id="historialPedidosCantidad">0</span>`;
+
+    historial = document.createElement("div");
+    historial.id = "historialPedidosLista";
+
+    box.appendChild(titulo);
+    box.appendChild(historial);
+
+    return historial;
+}
+
+function mostrarPedidosHoy() {
+    const contenedor = obtenerContenedorPedidosHoy();
+    if (!contenedor) return;
+
+    const activos = [...pedidosHoy].sort((a, b) => Number(a.numero) - Number(b.numero));
+
+    if (!activos.length) {
+        contenedor.innerHTML = `
+            <div style="padding:12px;background:#f5f5f5;border-radius:10px;color:#777;text-align:center;">
+                No hay pedidos activos.
+            </div>
+        `;
+        return;
+    }
+
+    contenedor.innerHTML = activos.map(pedido => {
+        const productos = Array.isArray(pedido.productos) ? pedido.productos : [];
+        const estadoTexto = {
+            pendiente: "POR PREPARAR",
+            en_marcha: "EN MARCHA",
+            listo: "LISTO"
+        }[pedido.estado] || pedido.estado;
+        const estadoColor = {
+            pendiente: "#fff3cd",
+            en_marcha: "#dbeafe",
+            listo: "#dcfce7"
+        }[pedido.estado] || "#f5f5f5";
+
+        return `
+            <div style="border:1px solid #ddd;border-radius:12px;padding:12px;margin-bottom:10px;background:white;">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;">
+                    <strong style="font-size:20px;">#${pedido.numero}</strong>
+                    <span style="background:${estadoColor};padding:5px 8px;border-radius:7px;font-size:12px;font-weight:800;">${estadoTexto}</span>
+                </div>
+                <div style="font-weight:700;margin-bottom:6px;">
+                    ${escapeHtml(pedido.destino || "")}${pedido.cliente ? " — " + escapeHtml(pedido.cliente) : ""}
+                </div>
+                <div style="font-size:14px;line-height:1.4;margin-bottom:8px;">
+                    ${productos.map(producto => `<div><strong>${producto.cantidad} ×</strong> ${escapeHtml(producto.nombre || "")}</div>`).join("")}
+                </div>
+                ${pedido.observacion ? `<div style="background:#fff7ed;border-left:4px solid #f97316;padding:7px;margin-bottom:8px;font-size:13px;"><strong>Obs.:</strong> ${escapeHtml(pedido.observacion)}</div>` : ""}
+                ${pedido.estado === "listo" ? `<button type="button" onclick="marcarEntregadoDesdeComandas(${pedido.id})" style="width:100%;padding:10px;border:0;border-radius:8px;background:#15803d;color:white;font-weight:800;cursor:pointer;">📦 PEDIDO ENTREGADO</button>` : ""}
+                <button type="button" onclick="anularPedidoDesdeComandas(${pedido.id}, ${pedido.numero})" style="width:100%;padding:9px;border:0;border-radius:8px;background:#dc2626;color:white;font-weight:800;cursor:pointer;margin-top:8px;">ANULAR PEDIDO</button>
+            </div>
+        `;
+    }).join("");
+}
+
+function escaparTextoHistorial(valor) {
+    return escapeHtml(String(valor ?? ""));
+}
+
+let pedidosHistorialExpandidos = new Set();
+
+function alternarDetalleHistorial(id) {
+    if (pedidosHistorialExpandidos.has(id)) {
+        pedidosHistorialExpandidos.delete(id);
+    } else {
+        pedidosHistorialExpandidos.add(id);
+    }
+    mostrarHistorialPedidos();
+}
+
+function mostrarHistorialPedidos() {
+    const historial = obtenerContenedorHistorial();
+    if (!historial) return;
+
+    const cantidad = document.getElementById("historialPedidosCantidad");
+    const lista = [...historialPedidos].sort((a, b) => Number(b.numero) - Number(a.numero));
+    const limite = 5;
+    const mostrandoTodos = historial.dataset.mostrandoTodos === "true";
+    const visibles = mostrandoTodos ? lista : lista.slice(0, limite);
+
+    if (cantidad) cantidad.textContent = lista.length;
+
+    if (!lista.length) {
+        historial.innerHTML = `<div style="padding:12px;background:#f5f5f5;border-radius:10px;color:#777;text-align:center;">Todavía no hay pedidos finalizados.</div>`;
+        return;
+    }
+
+    historial.innerHTML = `
+        <div style="max-height:360px;overflow-y:auto;padding-right:3px;">
+            ${visibles.map(pedido => {
+                const expandido = pedidosHistorialExpandidos.has(pedido.id);
+                const productos = Array.isArray(pedido.productos) ? pedido.productos : [];
+                const estado = pedido.estado === "anulado" ? "❌ ANULADO" : "✅ ENTREGADO";
+
+                return `
+                    <div style="border:1px solid #ddd;border-radius:10px;margin-bottom:8px;background:#fafafa;overflow:hidden;">
+                        <button type="button"
+                            onclick="alternarDetalleHistorial(${pedido.id})"
+                            style="width:100%;border:0;background:transparent;padding:11px;text-align:left;cursor:pointer;font:inherit;">
+                            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                                <div>
+                                    <strong style="font-size:16px;">#${pedido.numero}</strong>
+                                    <span style="margin-left:8px;font-size:12px;font-weight:800;">${estado}</span>
+                                </div>
+                                <span style="font-size:16px;color:#666;">${expandido ? "▲" : "▼"}</span>
+                            </div>
+                            <div style="font-size:13px;margin-top:4px;color:#444;">
+                                ${escaparTextoHistorial(pedido.destino || "")}${pedido.cliente ? " — " + escaparTextoHistorial(pedido.cliente) : ""}
+                            </div>
+                        </button>
+
+                        ${expandido ? `
+                            <div style="border-top:1px solid #e1e1e1;padding:11px;background:#fff;">
+                                <div style="font-size:13px;font-weight:800;margin-bottom:7px;">DETALLE DEL PEDIDO</div>
+                                <div style="font-size:14px;line-height:1.55;">
+                                    ${productos.length ? productos.map(producto => `
+                                        <div style="padding:7px 0;border-bottom:1px solid #eee;">
+                                            <div><strong>${Number(producto.cantidad) || 0} ×</strong> ${escaparTextoHistorial(producto.nombre || "")}</div>
+                                            ${Array.isArray(producto.modificaciones) && producto.modificaciones.length ? `<div style="font-size:12px;color:#b45309;margin-top:2px;">Modificaciones: ${producto.modificaciones.map(escaparTextoHistorial).join(", ")}</div>` : ""}
+                                            ${Array.isArray(producto.adicionales) && producto.adicionales.length ? `<div style="font-size:12px;color:#166534;margin-top:2px;">Adicionales: ${producto.adicionales.map(escaparTextoHistorial).join(", ")}</div>` : ""}
+                                            ${producto.guarnicion ? `<div style="font-size:12px;color:#555;margin-top:2px;">Guarnición: ${escaparTextoHistorial(producto.guarnicion)}</div>` : ""}
+                                            ${producto.preparacion ? `<div style="font-size:12px;color:#555;margin-top:2px;">Preparación: ${escaparTextoHistorial(producto.preparacion)}</div>` : ""}
+                                        </div>
+                                    `).join("") : `<div style="color:#777;">Sin productos registrados.</div>`}
+                                </div>
+                                ${pedido.observacion ? `<div style="margin-top:9px;padding:8px;background:#fff7ed;border-left:4px solid #f97316;font-size:13px;"><strong>Observación:</strong> ${escaparTextoHistorial(pedido.observacion)}</div>` : ""}
+                                ${pedido.cliente ? `<div style="margin-top:8px;font-size:13px;"><strong>Cliente:</strong> ${escaparTextoHistorial(pedido.cliente)}</div>` : ""}
+                                <div style="margin-top:4px;font-size:13px;"><strong>Destino:</strong> ${escaparTextoHistorial(pedido.destino || "")}</div>
+                            </div>
+                        ` : ""}
+                    </div>
+                `;
+            }).join("")}
+        </div>
+        ${lista.length > limite ? `
+            <button type="button" id="botonVerTodosPedidos" style="width:100%;padding:10px;margin-top:4px;border:1px solid #bbb;border-radius:8px;background:#fff;font-weight:800;cursor:pointer;">
+                ${mostrandoTodos ? "OCULTAR PEDIDOS ANTERIORES" : `VER TODOS LOS PEDIDOS (${lista.length})`}
+            </button>
+        ` : ""}
+    `;
+
+    const boton = document.getElementById("botonVerTodosPedidos");
+    if (boton) {
+        boton.addEventListener("click", () => {
+            historial.dataset.mostrandoTodos = mostrandoTodos ? "false" : "true";
+            mostrarHistorialPedidos();
+        });
+    }
+}
+
+async function cargarPedidosHoy() {
+    try {
+        const respuesta = await fetch("/api/pedidos");
+        const resultado = await respuesta.json();
+
+        if (!respuesta.ok) {
+            console.error("Error cargando pedidos activos:", resultado);
+            return;
+        }
+
+        pedidosHoy = Array.isArray(resultado) ? resultado : (resultado.pedidos || []);
+        mostrarPedidosHoy();
+    } catch (error) {
+        console.error("Error cargando pedidos activos:", error);
+    }
+}
+
+async function cargarHistorialPedidos() {
+    try {
+        const respuesta = await fetch("/api/pedidos/historial");
+        const resultado = await respuesta.json();
+
+        if (!respuesta.ok) {
+            console.error("Error cargando historial:", resultado);
+            return;
+        }
+
+        historialPedidos = Array.isArray(resultado) ? resultado : (resultado.pedidos || []);
+        mostrarHistorialPedidos();
+    } catch (error) {
+        console.error("Error cargando historial:", error);
+    }
+}
+
+async function marcarEntregadoDesdeComandas(id) {
+    try {
+        const respuesta = await fetch(`/api/pedidos/${id}/entregado`, { method: "POST" });
+        const resultado = await respuesta.json();
+
+        if (!resultado.ok) {
+            alert(resultado.mensaje || "No se pudo marcar el pedido como entregado.");
+            return;
+        }
+
+        const pedidoEntregado = resultado.pedido;
+        if (pedidoEntregado) {
+            pedidosHoy = pedidosHoy.filter(pedido => pedido.id !== pedidoEntregado.id);
+            historialPedidos = [
+                pedidoEntregado,
+                ...historialPedidos.filter(pedido => pedido.id !== pedidoEntregado.id)
+            ];
+            mostrarPedidosHoy();
+            mostrarHistorialPedidos();
+        } else {
+            await Promise.all([cargarPedidosHoy(), cargarHistorialPedidos()]);
+        }
+    } catch (error) {
+        console.error(error);
+        alert("No se pudo conectar con el servidor.");
+    }
+}
+
+async function anularPedidoDesdeComandas(id, numero) {
+    const confirmar = confirm(`¿Estás seguro de que deseas anular el pedido #${numero}?\n\nEsta acción no se puede deshacer.`);
+    if (!confirmar) return;
+
+    try {
+        const respuesta = await fetch(`/api/pedidos/${id}/anular`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ motivo: "" })
+        });
+        const resultado = await respuesta.json();
+
+        if (!resultado.ok) {
+            alert(resultado.mensaje || "No se pudo anular el pedido.");
+            return;
+        }
+
+        const pedidoAnulado = resultado.pedido;
+        if (pedidoAnulado) {
+            pedidosHoy = pedidosHoy.filter(pedido => pedido.id !== pedidoAnulado.id);
+            historialPedidos = [
+                pedidoAnulado,
+                ...historialPedidos.filter(pedido => pedido.id !== pedidoAnulado.id)
+            ];
+            mostrarPedidosHoy();
+            mostrarHistorialPedidos();
+        } else {
+            await Promise.all([cargarPedidosHoy(), cargarHistorialPedidos()]);
+        }
+    } catch (error) {
+        console.error(error);
+        alert("No se pudo conectar con el servidor.");
+    }
+}
+
+function conectarPedidosHoyTiempoReal() {
+    const fuente = new EventSource("/api/cocina");
+
+    fuente.onmessage = event => {
+        try {
+            const data = JSON.parse(event.data);
+
+            if (data.tipo === "inicio") {
+                pedidosHoy = Array.isArray(data.pedidos) ? data.pedidos : [];
+                mostrarPedidosHoy();
+                return;
+            }
+
+            if (data.pedido) {
+                const pedido = data.pedido;
+
+                if (pedido.estado === "entregado" || pedido.estado === "anulado") {
+                    pedidosHoy = pedidosHoy.filter(p => p.id !== pedido.id);
+                    historialPedidos = [
+                        pedido,
+                        ...historialPedidos.filter(p => p.id !== pedido.id)
+                    ];
+                    mostrarPedidosHoy();
+                    mostrarHistorialPedidos();
+                } else {
+                    const indice = pedidosHoy.findIndex(p => p.id === pedido.id);
+                    if (indice === -1) pedidosHoy.push(pedido);
+                    else pedidosHoy[indice] = pedido;
+                    mostrarPedidosHoy();
+                }
+            }
+        } catch (error) {
+            console.error("Error procesando actualización:", error);
+        }
+    };
+
+    fuente.onerror = () => console.warn("Conexión de pedidos en tiempo real interrumpida.");
+}
+
+cargarPedidosHoy();
+cargarHistorialPedidos();
+conectarPedidosHoyTiempoReal();
+
+// =====================================================
+// DEMORA DE EMPANADAS ANTES DE ENVIAR
+// =====================================================
+
+const CAPACIDAD_EMPANADAS = 156;
+const TIEMPO_EMPANADAS = 20;
+
+
+// Cantidad de empanadas de un pedido
+function cantidadEmpanadasPedido(pedido) {
+
+    if (!Array.isArray(pedido.productos)) return 0;
+
+    return pedido.productos.reduce((total, producto) => {
+
+        const nombre = String(producto.nombre || "").toLowerCase();
+        const tipo = String(producto.tipo || "").toLowerCase();
+        const cantidad = Number(producto.cantidad);
+
+        if (
+            tipo === "empanada" ||
+            nombre.includes("empanada")
+        ) {
+            return total + (
+                Number.isFinite(cantidad) && cantidad > 0
+                    ? cantidad
+                    : 0
+            );
+        }
+
+        return total;
+
+    }, 0);
+}
+
+
+// Cantidad de empanadas que estamos armando en el pedido actual
+function cantidadEmpanadasActual() {
+
+    return pedidoActual.reduce((total, producto) => {
+
+        const nombre = String(producto.nombre || "").toLowerCase();
+        const cantidad = Number(producto.cantidad);
+
+        if (
+            nombre.includes("empanada") &&
+            Number.isFinite(cantidad) &&
+            cantidad > 0
+        ) {
+            return total + cantidad;
+        }
+
+        return total;
+
+    }, 0);
+}
+
+
+// Calcula la demora siguiendo exactamente la lógica del servidor
+function calcularDemoraLocal(pedidos, cantidadNueva) {
+
+    const activos = pedidos.filter(pedido =>
+        pedido.estado !== "entregado" &&
+        pedido.estado !== "anulado" &&
+        pedido.modoRetiro !== "programado"
+    );
+
+    const enMarcha = activos
+        .filter(pedido => pedido.estado === "en_marcha")
+        .reduce(
+            (total, pedido) =>
+                total + cantidadEmpanadasPedido(pedido),
+            0
+        );
+
+    const pendientes = activos
+        .filter(pedido => pedido.estado === "pendiente")
+        .reduce(
+            (total, pedido) =>
+                total + cantidadEmpanadasPedido(pedido),
+            0
+        );
+
+    // El pedido que estamos armando todavía no está en Supabase.
+    // Lo sumamos como pendiente.
+    const pendientesConNuevo = pendientes + cantidadNueva;
+
+    const lotesEnMarcha = Math.ceil(
+        enMarcha / CAPACIDAD_EMPANADAS
+    );
+
+    const lotesPendientes = Math.ceil(
+        pendientesConNuevo / CAPACIDAD_EMPANADAS
+    );
+
+    const lotesTotales =
+        lotesEnMarcha + lotesPendientes;
+
+    return Math.max(
+        TIEMPO_EMPANADAS,
+        lotesTotales * TIEMPO_EMPANADAS
+    );
+}
+
+
+async function actualizarDemoraEmpanadas() {
+
+    let indicador = document.getElementById(
+        "demoraEmpanadasActual"
+    );
+
+    if (!indicador) {
+
+        indicador = document.createElement("div");
+
+        indicador.id = "demoraEmpanadasActual";
+
+        indicador.style.cssText = `
+            margin-top:12px;
+            padding:12px;
+            border-radius:10px;
+            background:#fff7ed;
+            border:1px solid #fed7aa;
+            font-weight:800;
+            text-align:center;
+            font-size:16px;
+        `;
+
+        const lista = document.getElementById("listaPedido");
+
+        if (lista) {
+            lista.parentNode.insertBefore(
+                indicador,
+                lista.nextSibling
+            );
+        }
+    }
+
+    const cantidadNueva = cantidadEmpanadasActual();
+
+    // Si el pedido actual no tiene empanadas,
+    // no mostramos la demora.
+    if (cantidadNueva <= 0) {
+        indicador.style.display = "none";
+        return;
+    }
+
+    indicador.style.display = "block";
+    indicador.textContent = "🥟 Calculando demora...";
+
+    try {
+
+        const respuesta = await fetch("/api/pedidos");
+
+        const datos = await respuesta.json();
+
+        const pedidos = Array.isArray(datos)
+            ? datos
+            : (datos.pedidos || []);
+
+        const demora = calcularDemoraLocal(
+            pedidos,
+            cantidadNueva
+        );
+
+        indicador.textContent =
+            `🥟 DEMORA ESTIMADA: ${demora} MINUTOS`;
+
+    } catch (error) {
+
+        console.error(
+            "Error calculando demora de empanadas:",
+            error
+        );
+
+        indicador.textContent =
+            "🥟 No se pudo calcular la demora.";
+    }
 }
