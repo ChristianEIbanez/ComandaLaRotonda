@@ -173,6 +173,7 @@ app.get("/cocina.html", (req, res, next) => {
 app.use(express.static(path.join(__dirname, "public")));
 
 const TIEMPO_PREPARACION_MINUTOS = 20;
+const CAPACIDAD_HORNEADO_EMPANADAS = 156; // 108 eléctricos + 48 horno de barro
 
 let clientesCocina = [];
 
@@ -182,7 +183,9 @@ let clientesCocina = [];
 
 function convertirPedido(row) {
     return {
+        id: row.id,
         numero: row.numero,
+        fechaOperativa: row.fecha_operativa,
         destino: row.destino,
         cliente: row.cliente || "",
         modoRetiro: row.modo_retiro,
@@ -192,9 +195,52 @@ function convertirPedido(row) {
         observacion: row.observacion || "",
         estado: row.estado,
         listoAt: row.listo_at,
-        entregadoAt: row.entregado_at
+        entregadoAt: row.entregado_at,
+        anuladoAt: row.anulado_at,
+        motivoAnulacion: row.motivo_anulacion || ""
     };
 }
+
+function cantidadEmpanadas(pedido) {
+    if (!Array.isArray(pedido.productos)) return 0;
+
+    return pedido.productos.reduce((total, producto) => {
+        const nombre = String(producto.nombre || "").toLowerCase();
+        const tipo = String(producto.tipo || "").toLowerCase();
+
+        if (tipo === "empanada" || nombre.includes("empanada")) {
+            const cantidad = Number(producto.cantidad);
+            return total + (Number.isFinite(cantidad) && cantidad > 0 ? cantidad : 0);
+        }
+
+        return total;
+    }, 0);
+}
+
+function calcularDemoraEmpanadas(pedidos) {
+    const activos = pedidos.filter(p =>
+        p.estado !== "entregado" &&
+        p.modoRetiro !== "programado"
+    );
+
+    const enMarcha = activos
+        .filter(p => p.estado === "en_marcha")
+        .reduce((sum, pedido) => sum + cantidadEmpanadas(pedido), 0);
+
+    const pendientes = activos
+        .filter(p => p.estado === "pendiente")
+        .reduce((sum, pedido) => sum + cantidadEmpanadas(pedido), 0);
+
+    const lotesEnMarcha = Math.ceil(enMarcha / CAPACIDAD_HORNEADO_EMPANADAS);
+    const lotesPendientes = Math.ceil(pendientes / CAPACIDAD_HORNEADO_EMPANADAS);
+    const lotesTotales = lotesEnMarcha + lotesPendientes;
+
+    return Math.max(
+        TIEMPO_PREPARACION_MINUTOS,
+        lotesTotales * TIEMPO_PREPARACION_MINUTOS
+    );
+}
+
 
 // ======================================================
 // EMITIR EVENTOS A COCINA
@@ -213,6 +259,19 @@ function emitir(evento) {
 }
 
 // ======================================================
+// FECHA OPERATIVA (ARGENTINA)
+// ======================================================
+
+function fechaOperativaHoy() {
+    return new Intl.DateTimeFormat("en-CA", {
+        timeZone: "America/Argentina/Buenos_Aires",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    }).format(new Date());
+}
+
+// ======================================================
 // OBTENER PEDIDOS ACTIVOS
 // ======================================================
 
@@ -220,7 +279,8 @@ async function obtenerPedidosActivos() {
     const { data, error } = await supabase
         .from("pedidos")
         .select("*")
-        .neq("estado", "entregado")
+        .eq("fecha_operativa", fechaOperativaHoy())
+        .not("estado", "in", "(entregado,anulado)")
         .order("numero", { ascending: true });
 
     if (error) {
@@ -286,7 +346,7 @@ app.post("/api/pedidos", requiereAuth, async (req, res) => {
         ) {
             return res.status(400).json({
                 ok: false,
-                mensaje: "Para llevar requiere nombre y apellido."
+                mensaje: "Para llevar requiere el nombre del cliente."
             });
         }
 
@@ -329,6 +389,12 @@ app.post("/api/pedidos", requiereAuth, async (req, res) => {
 
         const pedido = convertirPedido(data);
 
+        const pedidosActivos = await obtenerPedidosActivos();
+        const cantidadNueva = cantidadEmpanadas(pedido);
+        const demoraEmpanadas = cantidadNueva > 0
+            ? calcularDemoraEmpanadas(pedidosActivos)
+            : 0;
+
         emitir({
             tipo: "nuevo",
             pedido
@@ -336,7 +402,8 @@ app.post("/api/pedidos", requiereAuth, async (req, res) => {
 
         res.json({
             ok: true,
-            pedido
+            pedido,
+            demoraEmpanadas
         });
 
     } catch (error) {
@@ -365,6 +432,37 @@ app.get("/api/pedidos", requiereAuth, async (req, res) => {
         res.status(500).json({
             ok: false,
             mensaje: "No se pudieron obtener los pedidos."
+        });
+    }
+});
+
+// ======================================================
+// HISTORIAL DE PEDIDOS FINALIZADOS DEL DÍA
+// ======================================================
+
+app.get("/api/pedidos/historial", requiereAuth, async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from("pedidos")
+            .select("*")
+            .eq("fecha_operativa", fechaOperativaHoy())
+            .in("estado", ["entregado", "anulado"])
+            .order("creado_at", { ascending: false });
+
+        if (error) {
+            console.error("Error obteniendo historial:", error);
+            return res.status(500).json({
+                ok: false,
+                mensaje: "No se pudo obtener el historial."
+            });
+        }
+
+        res.json(data.map(convertirPedido));
+    } catch (error) {
+        console.error("Error inesperado obteniendo historial:", error);
+        res.status(500).json({
+            ok: false,
+            mensaje: "Error interno del servidor."
         });
     }
 });
@@ -413,17 +511,72 @@ app.get("/api/cocina", requiereAuth, async (req, res) => {
 });
 
 // ======================================================
+// PONER PEDIDO EN MARCHA
+// ======================================================
+
+app.post("/api/pedidos/:id/marchar", requiereAuth, async (req, res) => {
+    try {
+        const id = Number(req.params.id);
+
+        if (!Number.isInteger(id)) {
+            return res.status(400).json({
+                ok: false,
+                mensaje: "ID de pedido inválido."
+            });
+        }
+
+        const { data, error } = await supabase
+            .from("pedidos")
+            .update({ estado: "en_marcha" })
+            .eq("id", id)
+            .eq("fecha_operativa", fechaOperativaHoy())
+            .eq("estado", "pendiente")
+            .select("*")
+            .single();
+
+        if (error) {
+            console.error("Error poniendo pedido en marcha:", error);
+
+            return res.status(500).json({
+                ok: false,
+                mensaje: "No se pudo poner el pedido en marcha."
+            });
+        }
+
+        const pedido = convertirPedido(data);
+
+        emitir({
+            tipo: "estado",
+            pedido
+        });
+
+        res.json({
+            ok: true,
+            pedido
+        });
+
+    } catch (error) {
+        console.error("Error inesperado poniendo pedido en marcha:", error);
+
+        res.status(500).json({
+            ok: false,
+            mensaje: "Error interno del servidor."
+        });
+    }
+});
+
+// ======================================================
 // MARCAR PEDIDO COMO LISTO
 // ======================================================
 
-app.post("/api/pedidos/:numero/listo", requiereAuth, async (req, res) => {
+app.post("/api/pedidos/:id/listo", requiereAuth, async (req, res) => {
     try {
-        const numero = Number(req.params.numero);
+        const id = Number(req.params.id);
 
-        if (!Number.isInteger(numero)) {
+        if (!Number.isInteger(id)) {
             return res.status(400).json({
                 ok: false,
-                mensaje: "Número de pedido inválido."
+                mensaje: "ID de pedido inválido."
             });
         }
 
@@ -433,7 +586,9 @@ app.post("/api/pedidos/:numero/listo", requiereAuth, async (req, res) => {
                 estado: "listo",
                 listo_at: new Date().toISOString()
             })
-            .eq("numero", numero)
+            .eq("id", id)
+            .eq("fecha_operativa", fechaOperativaHoy())
+            .eq("estado", "en_marcha")
             .select("*")
             .single();
 
@@ -469,17 +624,67 @@ app.post("/api/pedidos/:numero/listo", requiereAuth, async (req, res) => {
 });
 
 // ======================================================
+// ANULAR PEDIDO
+// ======================================================
+
+app.post("/api/pedidos/:id/anular", requiereAuth, async (req, res) => {
+    try {
+        const id = Number(req.params.id);
+        const motivo = String(req.body?.motivo || "").trim();
+
+        if (!Number.isInteger(id)) {
+            return res.status(400).json({
+                ok: false,
+                mensaje: "ID de pedido inválido."
+            });
+        }
+
+        const { data, error } = await supabase
+            .from("pedidos")
+            .update({
+                estado: "anulado",
+                anulado_at: new Date().toISOString(),
+                motivo_anulacion: motivo
+            })
+            .eq("id", id)
+            .eq("fecha_operativa", fechaOperativaHoy())
+            .in("estado", ["pendiente", "en_marcha", "listo"])
+            .select("*")
+            .single();
+
+        if (error) {
+            console.error("Error anulando pedido:", error);
+            return res.status(500).json({
+                ok: false,
+                mensaje: "No se pudo anular el pedido."
+            });
+        }
+
+        const pedido = convertirPedido(data);
+        emitir({ tipo: "estado", pedido });
+
+        res.json({ ok: true, pedido });
+    } catch (error) {
+        console.error("Error inesperado anulando pedido:", error);
+        res.status(500).json({
+            ok: false,
+            mensaje: "Error interno del servidor."
+        });
+    }
+});
+
+// ======================================================
 // MARCAR PEDIDO COMO ENTREGADO
 // ======================================================
 
-app.post("/api/pedidos/:numero/entregado", requiereAuth, async (req, res) => {
+app.post("/api/pedidos/:id/entregado", requiereAuth, async (req, res) => {
     try {
-        const numero = Number(req.params.numero);
+        const id = Number(req.params.id);
 
-        if (!Number.isInteger(numero)) {
+        if (!Number.isInteger(id)) {
             return res.status(400).json({
                 ok: false,
-                mensaje: "Número de pedido inválido."
+                mensaje: "ID de pedido inválido."
             });
         }
 
@@ -489,7 +694,9 @@ app.post("/api/pedidos/:numero/entregado", requiereAuth, async (req, res) => {
                 estado: "entregado",
                 entregado_at: new Date().toISOString()
             })
-            .eq("numero", numero)
+            .eq("id", id)
+            .eq("fecha_operativa", fechaOperativaHoy())
+            .eq("estado", "listo")
             .select("*")
             .single();
 
