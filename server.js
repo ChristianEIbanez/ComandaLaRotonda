@@ -16,17 +16,61 @@ const supabase = createClient(
 // AUTENTICACIÓN
 // ======================================================
 
-const sesiones = new Map();
-const DURACION_SESION_MS = 12 * 60 * 60 * 1000;
+// Las sesiones NO se guardan en memoria.
+// Esto es importante en Render porque una instancia puede reiniciarse
+// o entrar en sleep; una Map se perdería y desloguearía a la Cocina.
+const DURACION_SESION_MS = 30 * 24 * 60 * 60 * 1000;
+const CLAVE_SESION = process.env.SESSION_SECRET || process.env.ADMIN_PASSWORD;
+
+if (!CLAVE_SESION) {
+    throw new Error("Falta SESSION_SECRET o ADMIN_PASSWORD para firmar las sesiones.");
+}
+
+function codificarBase64Url(texto) {
+    return Buffer.from(texto, "utf8").toString("base64url");
+}
+
+function firmarSesion(expira) {
+    return crypto
+        .createHmac("sha256", CLAVE_SESION)
+        .update(String(expira))
+        .digest("base64url");
+}
 
 function crearSesion() {
-    const token = crypto.randomBytes(32).toString("hex");
+    const expira = Date.now() + DURACION_SESION_MS;
+    return `${codificarBase64Url(String(expira))}.${firmarSesion(expira)}`;
+}
 
-    sesiones.set(token, {
-        expira: Date.now() + DURACION_SESION_MS
-    });
+function validarSesion(token) {
+    if (!token) return null;
 
-    return token;
+    const partes = token.split(".");
+    if (partes.length !== 2) return null;
+
+    let expira;
+
+    try {
+        expira = Number(Buffer.from(partes[0], "base64url").toString("utf8"));
+    } catch {
+        return null;
+    }
+
+    if (!Number.isSafeInteger(expira) || Date.now() > expira) {
+        return null;
+    }
+
+    const firmaEsperada = firmarSesion(expira);
+    const firmaRecibida = partes[1];
+
+    const a = Buffer.from(firmaRecibida);
+    const b = Buffer.from(firmaEsperada);
+
+    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
+        return null;
+    }
+
+    return { expira };
 }
 
 function obtenerToken(req) {
@@ -42,22 +86,12 @@ function obtenerToken(req) {
 
 function requiereAuth(req, res, next) {
     const token = obtenerToken(req);
+    const sesion = validarSesion(token);
 
-    if (!token || !sesiones.has(token)) {
+    if (!sesion) {
         return res.status(401).json({
             ok: false,
-            mensaje: "No autorizado."
-        });
-    }
-
-    const sesion = sesiones.get(token);
-
-    if (Date.now() > sesion.expira) {
-        sesiones.delete(token);
-
-        return res.status(401).json({
-            ok: false,
-            mensaje: "La sesión expiró."
+            mensaje: "No autorizado o sesión expirada."
         });
     }
 
@@ -101,10 +135,6 @@ app.post("/api/login", (req, res) => {
 app.post("/api/logout", (req, res) => {
     const token = obtenerToken(req);
 
-    if (token) {
-        sesiones.delete(token);
-    }
-
     res.setHeader(
         "Set-Cookie",
         "sesion=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0"
@@ -117,18 +147,9 @@ app.post("/api/logout", (req, res) => {
 
 app.get("/api/sesion", (req, res) => {
     const token = obtenerToken(req);
+    const sesion = validarSesion(token);
 
-    if (!token || !sesiones.has(token)) {
-        return res.status(401).json({
-            ok: false
-        });
-    }
-
-    const sesion = sesiones.get(token);
-
-    if (Date.now() > sesion.expira) {
-        sesiones.delete(token);
-
+    if (!sesion) {
         return res.status(401).json({
             ok: false
         });
@@ -145,7 +166,7 @@ app.get("/api/sesion", (req, res) => {
 app.get("/", (req, res, next) => {
     const token = obtenerToken(req);
 
-    if (!token || !sesiones.has(token)) {
+    if (!validarSesion(token)) {
 return res.redirect("/login.html?redirect=/");    }
 
     next();
@@ -154,7 +175,7 @@ return res.redirect("/login.html?redirect=/");    }
 app.get("/index.html", (req, res, next) => {
     const token = obtenerToken(req);
 
-    if (!token || !sesiones.has(token)) {
+    if (!validarSesion(token)) {
         return res.sendFile(path.join(__dirname, "public", "login.html"));
     }
 
@@ -164,7 +185,7 @@ app.get("/index.html", (req, res, next) => {
 app.get("/cocina.html", (req, res, next) => {
     const token = obtenerToken(req);
 
-    if (!token || !sesiones.has(token)) {
+    if (!validarSesion(token)) {
         return res.redirect("/login.html?redirect=/cocina.html");
     }
 
@@ -218,29 +239,49 @@ function cantidadEmpanadas(pedido) {
 }
 
 function calcularDemoraEmpanadas(pedidos) {
+    const ahora = new Date();
+
+    const horaArgentina = Number(
+        new Intl.DateTimeFormat("en-US", {
+            timeZone: "America/Argentina/Buenos_Aires",
+            hour: "2-digit",
+            hour12: false
+        }).format(ahora)
+    );
+
+    const diaArgentina = new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Argentina/Buenos_Aires",
+        weekday: "short"
+    }).format(ahora);
+
+    // El horno de barro funciona solamente los domingos
+    // de 11:00 a 16:00.
+    const esDomingo = diaArgentina === "Sun";
+    const hornoBarroActivo =
+        esDomingo &&
+        horaArgentina >= 11 &&
+        horaArgentina < 16;
+
+    const capacidadPorTanda = hornoBarroActivo ? 156 : 108;
+
     const activos = pedidos.filter(p =>
         p.estado !== "entregado" &&
+        p.estado !== "anulado" &&
         p.modoRetiro !== "programado"
     );
 
-    const enMarcha = activos
-        .filter(p => p.estado === "en_marcha")
-        .reduce((sum, pedido) => sum + cantidadEmpanadas(pedido), 0);
+    const totalEmpanadas = activos.reduce(
+        (sum, pedido) => sum + cantidadEmpanadas(pedido),
+        0
+    );
 
-    const pendientes = activos
-        .filter(p => p.estado === "pendiente")
-        .reduce((sum, pedido) => sum + cantidadEmpanadas(pedido), 0);
-
-    const lotesEnMarcha = Math.ceil(enMarcha / CAPACIDAD_HORNEADO_EMPANADAS);
-    const lotesPendientes = Math.ceil(pendientes / CAPACIDAD_HORNEADO_EMPANADAS);
-    const lotesTotales = lotesEnMarcha + lotesPendientes;
+    const lotes = Math.ceil(totalEmpanadas / capacidadPorTanda);
 
     return Math.max(
         TIEMPO_PREPARACION_MINUTOS,
-        lotesTotales * TIEMPO_PREPARACION_MINUTOS
+        lotes * TIEMPO_PREPARACION_MINUTOS
     );
 }
-
 
 // ======================================================
 // EMITIR EVENTOS A COCINA
@@ -263,12 +304,30 @@ function emitir(evento) {
 // ======================================================
 
 function fechaOperativaHoy() {
-    return new Intl.DateTimeFormat("en-CA", {
+    const ahora = new Date();
+    const partes = new Intl.DateTimeFormat("en-US", {
         timeZone: "America/Argentina/Buenos_Aires",
         year: "numeric",
         month: "2-digit",
-        day: "2-digit"
-    }).format(new Date());
+        day: "2-digit",
+        hour: "2-digit",
+        hour12: false
+    }).formatToParts(ahora);
+
+    const obtener = tipo => partes.find(p => p.type === tipo)?.value;
+    const hora = Number(obtener("hour"));
+    const fecha = `${obtener("year")}-${obtener("month")}-${obtener("day")}`;
+
+    if (hora < 2) {
+        const anterior = new Date(`${fecha}T12:00:00-03:00`);
+        anterior.setDate(anterior.getDate() - 1);
+        return new Intl.DateTimeFormat("en-CA", {
+            timeZone: "America/Argentina/Buenos_Aires",
+            year: "numeric", month: "2-digit", day: "2-digit"
+        }).format(anterior);
+    }
+
+    return fecha;
 }
 
 // ======================================================
@@ -442,10 +501,15 @@ app.get("/api/pedidos", requiereAuth, async (req, res) => {
 
 app.get("/api/pedidos/historial", requiereAuth, async (req, res) => {
     try {
+        const fechaSolicitada = String(req.query.fecha || fechaOperativaHoy());
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(fechaSolicitada)) {
+            return res.status(400).json({ ok: false, mensaje: "Fecha de historial inválida." });
+        }
+
         const { data, error } = await supabase
             .from("pedidos")
             .select("*")
-            .eq("fecha_operativa", fechaOperativaHoy())
+            .eq("fecha_operativa", fechaSolicitada)
             .in("estado", ["entregado", "anulado"])
             .order("creado_at", { ascending: false });
 
@@ -724,6 +788,132 @@ app.post("/api/pedidos/:id/entregado", requiereAuth, async (req, res) => {
     } catch (error) {
         console.error("Error inesperado:", error);
 
+        res.status(500).json({
+            ok: false,
+            mensaje: "Error interno del servidor."
+        });
+    }
+});
+
+// ======================================================
+// CORREGIR ENTREGA ACCIDENTAL
+// ENTREGADO -> LISTO
+// ======================================================
+
+app.post("/api/pedidos/:id/corregir-entrega", requiereAuth, async (req, res) => {
+    try {
+        const id = Number(req.params.id);
+
+        if (!Number.isInteger(id)) {
+            return res.status(400).json({
+                ok: false,
+                mensaje: "ID de pedido inválido."
+            });
+        }
+
+        const { data, error } = await supabase
+            .from("pedidos")
+            .update({
+                estado: "listo",
+                listo_at: new Date().toISOString(),
+                entregado_at: null
+            })
+            .eq("id", id)
+            .eq("fecha_operativa", fechaOperativaHoy())
+            .eq("estado", "entregado")
+            .select("*")
+            .single();
+
+        if (error) {
+            console.error("Error corrigiendo entrega:", error);
+
+            return res.status(409).json({
+                ok: false,
+                mensaje: "El pedido ya no figura como entregado o no puede corregirse."
+            });
+        }
+
+        const pedido = convertirPedido(data);
+
+        emitir({
+            tipo: "estado",
+            pedido
+        });
+
+        res.json({
+            ok: true,
+            pedido
+        });
+
+    } catch (error) {
+        console.error("Error inesperado corrigiendo entrega:", error);
+
+        res.status(500).json({
+            ok: false,
+            mensaje: "Error interno del servidor."
+        });
+    }
+});
+
+// ======================================================
+// ESTADÍSTICAS DE COMIDA VENDIDA DEL DÍA
+// ======================================================
+
+app.get("/api/estadisticas/comida-hoy", requiereAuth, async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from("pedidos")
+            .select("productos")
+            .eq("fecha_operativa", fechaOperativaHoy())
+            .eq("estado", "entregado");
+
+        if (error) {
+            console.error("Error obteniendo estadísticas de comida:", error);
+            return res.status(500).json({
+                ok: false,
+                mensaje: "No se pudieron obtener las estadísticas de comida."
+            });
+        }
+
+        const cantidades = new Map();
+        let totalUnidades = 0;
+
+        for (const pedido of data || []) {
+            const productos = Array.isArray(pedido.productos) ? pedido.productos : [];
+
+            for (const producto of productos) {
+                const nombre = String(producto?.nombre || "").trim();
+                const cantidad = Number(producto?.cantidad);
+
+                if (!nombre || !Number.isFinite(cantidad) || cantidad <= 0) {
+                    continue;
+                }
+
+                cantidades.set(
+                    nombre,
+                    (cantidades.get(nombre) || 0) + cantidad
+                );
+
+                totalUnidades += cantidad;
+            }
+        }
+
+        const productosVendidos = [...cantidades.entries()]
+            .map(([nombre, cantidad]) => ({ nombre, cantidad }))
+            .sort((a, b) =>
+                b.cantidad - a.cantidad ||
+                a.nombre.localeCompare(b.nombre, "es")
+            );
+
+        res.json({
+            ok: true,
+            totalPedidosEntregados: (data || []).length,
+            totalUnidades,
+            productosVendidos
+        });
+
+    } catch (error) {
+        console.error("Error inesperado obteniendo estadísticas de comida:", error);
         res.status(500).json({
             ok: false,
             mensaje: "Error interno del servidor."
