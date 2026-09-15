@@ -13,43 +13,23 @@ header{height:68px;padding:10px 20px;background:#050505;border-bottom:1px solid 
 main{height:calc(100vh - 68px);padding:14px 16px;max-width:2200px;margin:auto;display:grid;grid-template-columns:2fr 2fr 1fr;gap:14px;min-height:0}
 .seccion{min-width:0;min-height:0;background:#111;border:1px solid #282828;border-radius:12px;padding:11px;display:flex;flex-direction:column;overflow:hidden}
 .seccion h2{flex:0 0 auto;margin:0 0 9px;padding:0 4px;font-size:20px;font-weight:900;line-height:1.1;white-space:nowrap}.contador{font-size:14px;color:#999;vertical-align:middle}
-.grid{flex:1;min-height:0;display:grid;gap:8px;overflow:hidden}
-.grid.cantidad-1{grid-template-rows:minmax(0,1fr)}
-.grid.cantidad-2{grid-template-rows:repeat(2,minmax(0,1fr))}
-.grid.cantidad-3{grid-template-rows:repeat(3,minmax(0,1fr))}
-.grid.cantidad-muchos{grid-template-rows:repeat(5,minmax(0,1fr));grid-auto-rows:minmax(48px,auto)}
-.grid.cantidad-muchos .pedido{padding:8px 10px}
-.grid.cantidad-muchos .producto{padding:6px 0 5px}
-.grid.cantidad-muchos .producto strong{font-size:19px}
-.grid.cantidad-muchos .cantidad{font-size:25px}
-.grid.cantidad-muchos .nombre-producto{font-size:19px}
-.grid.cantidad-muchos .detalle{font-size:12px}
-.grid.cantidad-muchos .tiempo-pedido{font-size:12px;margin:4px 0 1px}
-.grid.cantidad-muchos .pedido{padding:7px 9px}
-.grid.cantidad-muchos .cabecera{flex:0 0 auto}
-.grid.cantidad-muchos .numero{font-size:27px}
-.grid.cantidad-muchos .estado{font-size:10px;padding:4px 6px}
-.grid.cantidad-muchos .contexto{margin-top:3px;padding-bottom:3px;gap:7px;flex:0 0 auto}
-.grid.cantidad-muchos .destino,.grid.cantidad-muchos .cliente{font-size:13px}
-.grid.cantidad-muchos .tiempo-pedido,.grid.cantidad-muchos .horario,.grid.cantidad-muchos .meta,.grid.cantidad-muchos .observacion{display:none}
-.grid.cantidad-muchos .productos{flex:1 1 auto;min-height:0;margin-top:3px;display:flex;align-items:flex-start}
-.grid.cantidad-muchos .producto{padding:2px 0 0;border-top:0;overflow:hidden}
-.grid.cantidad-muchos .producto:not(:first-child){display:none}
-.grid.cantidad-muchos .producto strong{font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.grid.cantidad-muchos .cantidad{font-size:23px}
-.grid.cantidad-muchos .nombre-producto{font-size:18px}
-.grid.cantidad-muchos .detalle{display:none}
-.grid.cantidad-muchos .pedido button{padding:8px;margin-top:5px;font-size:13px;min-height:34px}
-.pedido{min-height:0;background:#181818;border:2px solid #383838;border-radius:10px;padding:11px;box-shadow:0 4px 14px rgba(0,0,0,.22);display:flex;flex-direction:column;overflow:hidden}
+.grid{flex:1;min-height:0;min-width:0;display:grid;grid-auto-rows:minmax(min-content,auto);align-content:stretch;align-items:stretch;gap:8px;overflow-x:hidden;overflow-y:auto;padding-right:2px}
+/*
+   SISTEMA DE ALTURA DEFINITIVO:
+   - Cada comanda conserva como mínimo todo el alto que necesita su contenido.
+   - Si sobra espacio, las filas se estiran para aprovechar la pantalla.
+   - Si no alcanza, el grid crece y aparece scroll; nunca se recorta una comanda.
+   - No dependemos de una cantidad fija de pedidos ni del zoom del navegador.
+*/
+.pedido{min-height:max-content;background:#181818;border:2px solid #383838;border-radius:10px;padding:11px;box-shadow:0 4px 14px rgba(0,0,0,.22);display:flex;flex-direction:column;overflow:visible}
 .pedido.ahora{border-color:#fff}.pedido.proximamente{opacity:.68}.pedido.preparar{border-width:3px}.pedido.urgente{border-width:4px}.pedido.demorado{border-width:4px}.pedido.nueva{animation:nuevaComanda 1s ease-in-out 5;box-shadow:0 0 0 2px #fff}
 @keyframes nuevaComanda{0%,100%{transform:scale(1)}50%{transform:scale(1.012)}}
 .cabecera{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}.numero{font-size:34px;line-height:1;font-weight:900}.estado{font-size:12px;font-weight:900;border:1px solid #555;border-radius:6px;padding:6px 8px;text-align:center;white-space:nowrap}
 .contexto{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:7px;padding-bottom:7px;border-bottom:1px solid #303030}.destino,.cliente{font-size:15px;font-weight:900}.horario{font-size:14px;font-weight:900;margin:7px 0 0}.meta{font-size:11px;color:#aaa;margin:4px 0 5px}.tiempo-pedido{font-size:13px;color:#aaa;font-weight:800;margin:6px 0 2px}
-.productos{margin-top:5px;min-height:0;overflow:hidden}.producto{padding:8px 0 7px;border-top:1px solid #3a3a3a}.producto:last-child{border-bottom:1px solid #333}.producto strong{display:block;font-size:22px;line-height:1.08;font-weight:900}.cantidad{font-size:29px;font-weight:900;margin-right:5px}.nombre-producto{font-size:22px;font-weight:900}.detalle{font-size:14px;color:#eee;margin-top:4px;line-height:1.25;font-weight:700}
+.productos{margin-top:5px;min-height:0;overflow:visible}.producto{padding:8px 0 7px;border-top:1px solid #3a3a3a}.producto:last-child{border-bottom:1px solid #333}.producto strong{display:block;font-size:22px;line-height:1.08;font-weight:900}.cantidad{font-size:29px;font-weight:900;margin-right:5px}.nombre-producto{font-size:22px;font-weight:900}.detalle{font-size:14px;color:#eee;margin-top:4px;line-height:1.25;font-weight:700}
 .observacion{margin-top:8px;padding:9px;border-radius:7px;background:#292929;border-left:4px solid #fff;font-size:14px;line-height:1.25;font-weight:900}.pedido button{width:100%;border:0;border-radius:7px;padding:12px;margin-top:auto;font-size:14px;font-weight:900;cursor:pointer;flex:0 0 auto}.btn-listo,.btn-entregado,.btn-marchar{background:#fff;color:#111}.en-marcha{border-left:5px solid #5aa9ff}.listo{border-left:5px solid #63c174}
-.pedido.compacto{padding:7px 9px;display:block}.pedido.compacto .cabecera{align-items:center}.pedido.compacto .numero{font-size:25px}.pedido.compacto .estado{font-size:10px;padding:4px 6px}.pedido.compacto .contexto{margin-top:4px;padding-bottom:3px;gap:7px}.pedido.compacto .destino,.pedido.compacto .cliente{font-size:12px}.pedido.compacto .tiempo-pedido,.pedido.compacto .horario,.pedido.compacto .meta,.pedido.compacto .observacion{display:none}.pedido.compacto .productos{margin-top:2px;display:flex;gap:8px}.pedido.compacto .producto{border:0;padding:0}.pedido.compacto .producto:not(:first-child){display:none}.pedido.compacto .producto strong{font-size:15px}.pedido.compacto .cantidad{font-size:18px}.pedido.compacto .nombre-producto{font-size:15px}.pedido.compacto button{padding:6px;margin-top:5px;font-size:11px}
 .vacio{color:#666;font-size:14px;padding:10px 4px}
-@media(max-width:1100px){main{grid-template-columns:1fr;overflow:auto;height:auto;min-height:calc(100vh - 68px)}html,body{overflow:auto}.seccion{min-height:500px}.grid.cantidad-muchos{grid-template-rows:repeat(3,180px);overflow:auto}.titulo{font-size:22px}}
+@media(max-width:1100px){main{grid-template-columns:1fr;overflow:auto;height:auto;min-height:calc(100vh - 68px)}html,body{overflow:auto}.seccion{min-height:500px}.grid{overflow-y:auto}.titulo{font-size:22px}}
 @media(max-width:650px){header{height:auto;padding:10px 12px}.header-derecha{gap:7px}.btn-logout{padding:7px 9px;font-size:11px}.reloj{font-size:17px}main{padding:10px}.seccion{min-height:420px}.pedido{padding:10px}.producto strong{font-size:20px}.cantidad{font-size:26px}.nombre-producto{font-size:20px}}
 </style>
 </head>
@@ -238,13 +218,6 @@ function ordenarPendientes(lista){
     });
 }
 
-function claseCantidad(lista){
-    if(lista.length <= 1) return "cantidad-1";
-    if(lista.length === 2) return "cantidad-2";
-    if(lista.length === 3) return "cantidad-3";
-    return "cantidad-muchos";
-}
-
 function render(){
     const activos = pedidos.filter(p => p.estado !== "entregado");
     const peds = ordenarPendientes(activos.filter(p => p.estado === "pendiente"));
@@ -253,9 +226,9 @@ function render(){
     const list = activos.filter(p => p.estado === "listo")
         .sort((a,b)=>new Date(a.listoAt||a.creadoAt)-new Date(b.listoAt||b.creadoAt));
 
-    pendientes.className = `grid ${claseCantidad(peds)}`;
-    enMarcha.className = `grid ${claseCantidad(marcha)}`;
-    listos.className = `grid ${claseCantidad(list)}`;
+    pendientes.className = "grid";
+    enMarcha.className = "grid";
+    listos.className = "grid";
 
     pendientes.innerHTML = peds.map((p,i)=>renderPedidoPendiente(p,i,peds.length)).join("");
     enMarcha.innerHTML = marcha.map((p,i)=>renderPedidoEnMarcha(p,i,marcha.length)).join("");
@@ -286,15 +259,11 @@ function renderProductos(pedido, compacto=false){
     }).join("");
 }
 
-function claseCompacta(indice,total){
-    return total > 5 && indice >= 5 ? " compacto" : "";
-}
-
 function renderPedidoPendiente(pedido,indice,total){
     const u = datosUrgencia(pedido);
 
     return `
-    <article class="pedido ${u.clase}${claseCompacta(indice,total)}" data-pedido-id="${pedido.id}">
+    <article class="pedido ${u.clase}" data-pedido-id="${pedido.id}">
         <div class="cabecera">
             <div class="numero">#${pedido.numero}</div>
             <div class="estado">${u.texto}</div>
@@ -314,17 +283,16 @@ function renderPedidoPendiente(pedido,indice,total){
             ? `<div class="meta"><strong>${escapeHtml(u.detalle)}</strong></div>`
             : ""}
 
-        <div class="productos">${renderProductos(pedido,total>5 && indice>=5)}</div>
-        ${pedido.observacion && !(total>5 && indice>=5) ? `<div class="observacion">⚠️ ${escapeHtml(pedido.observacion)}</div>` : ""}
+        <div class="productos">${renderProductos(pedido,false)}</div>
+        ${pedido.observacion ? `<div class="observacion">⚠️ ${escapeHtml(pedido.observacion)}</div>` : ""}
 
         <button class="btn-marchar" onclick="marcharPedido(${pedido.id})">▶ MARCHAR</button>
     </article>`;
 }
 
 function renderPedidoEnMarcha(pedido,indice,total){
-    const compacto = total>5 && indice>=5;
     return `
-    <article class="pedido en-marcha${compacto ? " compacto" : ""}" data-pedido-id="${pedido.id}">
+    <article class="pedido en-marcha" data-pedido-id="${pedido.id}">
         <div class="cabecera">
             <div class="numero">#${pedido.numero}</div>
             <div class="estado">🔵 EN MARCHA</div>
@@ -340,8 +308,8 @@ function renderPedidoEnMarcha(pedido,indice,total){
             : ""}
 
         <div class="tiempo-pedido">${tiempoDesdePedido(pedido)}</div>
-        <div class="productos">${renderProductos(pedido,compacto)}</div>
-        ${pedido.observacion && !compacto ? `<div class="observacion">⚠️ ${escapeHtml(pedido.observacion)}</div>` : ""}
+        <div class="productos">${renderProductos(pedido,false)}</div>
+        ${pedido.observacion ? `<div class="observacion">⚠️ ${escapeHtml(pedido.observacion)}</div>` : ""}
 
         <button class="btn-listo" onclick="marcarListo(${pedido.id})">✓ PEDIDO LISTO</button>
     </article>`;
@@ -350,10 +318,8 @@ function renderPedidoEnMarcha(pedido,indice,total){
 function renderPedidoListo(pedido,indice,total){
     const listo = pedido.listoAt ? new Date(pedido.listoAt) : new Date();
     const espera = Math.max(0,Math.floor((Date.now()-listo.getTime())/60000));
-    const compacto = total>5 && indice>=5;
-
     return `
-    <article class="pedido listo${compacto ? " compacto" : ""}" data-pedido-id="${pedido.id}">
+    <article class="pedido listo" data-pedido-id="${pedido.id}">
         <div class="cabecera">
             <div class="numero">#${pedido.numero}</div>
             <div class="estado">🟢 LISTO</div>
@@ -369,8 +335,8 @@ function renderPedidoListo(pedido,indice,total){
             : ""}
 
         <div class="meta">Esperando retiro: ${espera} min</div>
-        <div class="productos">${renderProductos(pedido,compacto)}</div>
-        ${pedido.observacion && !compacto ? `<div class="observacion">⚠️ ${escapeHtml(pedido.observacion)}</div>` : ""}
+        <div class="productos">${renderProductos(pedido,false)}</div>
+        ${pedido.observacion ? `<div class="observacion">⚠️ ${escapeHtml(pedido.observacion)}</div>` : ""}
 
         <button class="btn-entregado" onclick="marcarEntregado(${pedido.id})">📦 PEDIDO ENTREGADO</button>
     </article>`;
