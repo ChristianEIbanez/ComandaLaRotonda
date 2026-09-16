@@ -542,10 +542,19 @@ document.getElementById("enviar").addEventListener("click", async () => {
             return;
         }
 
-        if (resultado.demoraEmpanadas > 0) {
-            mensaje.textContent = `🥟 Pedido #${resultado.pedido.numero} enviado a cocina. Demora estimada de empanadas: ${resultado.demoraEmpanadas} minutos.`;
-        } else {
-            mensaje.textContent = `✅ Pedido #${resultado.pedido.numero} enviado a cocina.`;
+        const pedidoCreado = resultado.pedido;
+        const textoConfirmacion = resultado.demoraEmpanadas > 0
+            ? `🥟 Pedido #${pedidoCreado.numero} enviado a cocina. Demora estimada de empanadas: ${resultado.demoraEmpanadas} minutos.`
+            : `✅ Pedido #${pedidoCreado.numero} enviado a cocina.`;
+
+        mensaje.textContent = textoConfirmacion;
+
+        const deseaImprimir = confirm(
+            `Pedido #${pedidoCreado.numero} enviado a cocina.\n\n¿Deseás imprimir el ticket para el cliente?`
+        );
+
+        if (deseaImprimir) {
+            imprimirTicket(pedidoCreado);
         }
 
         pedidoActual = [];
@@ -578,6 +587,110 @@ function escapeHtml(text) {
         .replaceAll(">","&gt;")
         .replaceAll('"',"&quot;")
         .replaceAll("'","&#039;");
+}
+
+function formatearFechaHoraTicket(fecha) {
+    if (!fecha) return "";
+
+    return new Intl.DateTimeFormat("es-AR", {
+        timeZone: "America/Argentina/Buenos_Aires",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+    }).format(new Date(fecha));
+}
+
+function construirDetalleTicket(producto) {
+    const detalles = [];
+
+    if (producto.preparacion) detalles.push(producto.preparacion);
+    if (producto.guarnicion) detalles.push("Guarnición: " + producto.guarnicion);
+    detalles.push(...(producto.modificaciones || []));
+    detalles.push(...(producto.adicionales || []).map(a => "+ " + a));
+
+    return detalles;
+}
+
+function imprimirTicket(pedido) {
+    if (!pedido) return;
+
+    const ventana = window.open("", "_blank", "width=420,height=700");
+
+    if (!ventana) {
+        alert("El navegador bloqueó la ventana de impresión. Permití las ventanas emergentes para este sitio.");
+        return;
+    }
+
+    const productos = Array.isArray(pedido.productos) ? pedido.productos : [];
+    const fechaHora = formatearFechaHoraTicket(pedido.creadoAt);
+    const partesFecha = fechaHora.split(", ");
+    const fecha = partesFecha[0] || "";
+    const hora = partesFecha[1] || "";
+
+    const productosHtml = productos.map(producto => {
+        const detalles = construirDetalleTicket(producto);
+
+        return `
+            <div class="producto">
+                <div><strong>${Number(producto.cantidad) || 0} ×</strong> ${escapeHtml(producto.nombre || "")}</div>
+                ${detalles.length ? `<div class="detalle">${detalles.map(escapeHtml).join("<br>")}</div>` : ""}
+            </div>
+        `;
+    }).join("");
+
+    const retiro = pedido.modoRetiro === "programado" && pedido.retiroAt
+        ? `<div class="bloque"><strong>RETIRO PROGRAMADO</strong><br>${escapeHtml(formatearFechaHoraTicket(pedido.retiroAt))}</div>`
+        : `<div class="bloque"><strong>${escapeHtml(pedido.modoRetiro === "ahora" ? "PARA LLEVAR" : pedido.modoRetiro || "")}</strong></div>`;
+
+    ventana.document.write(`
+        <!doctype html>
+        <html lang="es">
+        <head>
+            <meta charset="utf-8">
+            <title>Pedido #${escapeHtml(pedido.numero)}</title>
+            <style>
+                @page { size: 58mm auto; margin: 0; }
+                * { box-sizing: border-box; }
+                html, body { margin: 0; padding: 0; width: 58mm; }
+                body { font-family: Arial, Helvetica, sans-serif; font-size: 12px; line-height: 1.35; padding: 4mm 3mm; color: #000; }
+                .cabecera { text-align: center; font-weight: 900; font-size: 15px; margin-bottom: 8px; }
+                .numero { text-align: center; font-weight: 900; font-size: 22px; margin: 5px 0 8px; }
+                .fecha { text-align: center; font-size: 11px; margin-bottom: 8px; }
+                .cliente { font-size: 15px; font-weight: 900; text-align: center; margin: 8px 0; }
+                .separador { border-top: 1px dashed #000; margin: 8px 0; }
+                .producto { margin: 7px 0; }
+                .detalle { font-size: 10px; margin: 2px 0 0 16px; }
+                .bloque { text-align: center; margin: 8px 0; font-size: 12px; }
+                .observacion { margin-top: 8px; font-size: 11px; }
+                .pie { text-align: center; font-size: 10px; margin-top: 12px; }
+            </style>
+        </head>
+        <body>
+            <div class="cabecera">DRUGSTORE LA ROTONDA</div>
+            <div class="separador"></div>
+            <div class="numero">PEDIDO #${escapeHtml(pedido.numero)}</div>
+            <div class="fecha">FECHA: ${escapeHtml(fecha)}<br>HORA: ${escapeHtml(hora)}</div>
+            ${pedido.cliente ? `<div class="cliente">${escapeHtml(pedido.cliente)}</div>` : ""}
+            <div class="separador"></div>
+            ${productosHtml || "<div>Sin productos</div>"}
+            ${pedido.observacion ? `<div class="observacion"><strong>OBSERVACIÓN:</strong><br>${escapeHtml(pedido.observacion)}</div>` : ""}
+            ${retiro}
+            <div class="separador"></div>
+            <div class="pie">GRACIAS POR SU COMPRA</div>
+        </body>
+        </html>
+    `);
+
+    ventana.document.close();
+    ventana.focus();
+
+    setTimeout(() => {
+        ventana.print();
+        ventana.close();
+    }, 250);
 }
 
 document.querySelector('.categoria[data-categoria="empanadas"]').click();
