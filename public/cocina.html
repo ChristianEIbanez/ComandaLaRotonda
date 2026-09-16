@@ -13,7 +13,7 @@ header{height:68px;padding:10px 20px;background:#050505;border-bottom:1px solid 
 main{height:calc(100vh - 68px);padding:14px 16px;max-width:2200px;margin:auto;display:grid;grid-template-columns:2fr 2fr 1fr;gap:14px;min-height:0}
 .seccion{min-width:0;min-height:0;background:#111;border:1px solid #282828;border-radius:12px;padding:11px;display:flex;flex-direction:column;overflow:hidden}
 .seccion h2{flex:0 0 auto;margin:0 0 9px;padding:0 4px;font-size:20px;font-weight:900;line-height:1.1;white-space:nowrap}.contador{font-size:14px;color:#999;vertical-align:middle}
-.grid{flex:1;min-height:0;min-width:0;display:grid;grid-auto-rows:minmax(min-content,auto);align-content:stretch;align-items:stretch;gap:8px;overflow-x:hidden;overflow-y:auto;padding-right:2px}
+.grid{flex:1;min-height:0;min-width:0;display:grid;grid-template-columns:1fr;grid-auto-rows:max-content;align-content:start;align-items:start;gap:8px;overflow-x:hidden;overflow-y:auto;padding-right:2px}
 /*
    SISTEMA DE ALTURA DEFINITIVO:
    - Cada comanda conserva como mínimo todo el alto que necesita su contenido.
@@ -21,16 +21,133 @@ main{height:calc(100vh - 68px);padding:14px 16px;max-width:2200px;margin:auto;di
    - Si no alcanza, el grid crece y aparece scroll; nunca se recorta una comanda.
    - No dependemos de una cantidad fija de pedidos ni del zoom del navegador.
 */
-.pedido{min-height:max-content;background:#181818;border:2px solid #383838;border-radius:10px;padding:11px;box-shadow:0 4px 14px rgba(0,0,0,.22);display:flex;flex-direction:column;overflow:visible}
+.pedido{min-height:0;background:#181818;border:2px solid #383838;border-radius:10px;padding:11px;box-shadow:0 4px 14px rgba(0,0,0,.22);display:flex;flex-direction:column;overflow:visible}
 .pedido.ahora{border-color:#fff}.pedido.proximamente{opacity:.68}.pedido.preparar{border-width:3px}.pedido.urgente{border-width:4px}.pedido.demorado{border-width:4px}.pedido.nueva{animation:nuevaComanda 1s ease-in-out 5;box-shadow:0 0 0 2px #fff}
 @keyframes nuevaComanda{0%,100%{transform:scale(1)}50%{transform:scale(1.012)}}
-.cabecera{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}.numero{font-size:34px;line-height:1;font-weight:900}.estado{font-size:12px;font-weight:900;border:1px solid #555;border-radius:6px;padding:6px 8px;text-align:center;white-space:nowrap}
-.contexto{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:7px;padding-bottom:7px;border-bottom:1px solid #303030}.destino,.cliente{font-size:15px;font-weight:900}.horario{font-size:14px;font-weight:900;margin:7px 0 0}.meta{font-size:11px;color:#aaa;margin:4px 0 5px}.tiempo-pedido{font-size:13px;color:#aaa;font-weight:800;margin:6px 0 2px}
-.productos{margin-top:5px;min-height:0;overflow:visible}.producto{padding:8px 0 7px;border-top:1px solid #3a3a3a}.producto:last-child{border-bottom:1px solid #333}.producto strong{display:block;font-size:22px;line-height:1.08;font-weight:900}.cantidad{font-size:29px;font-weight:900;margin-right:5px}.nombre-producto{font-size:22px;font-weight:900}.detalle{font-size:14px;color:#eee;margin-top:4px;line-height:1.25;font-weight:700}
+.cabecera{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:118px}.numero{font-size:62px;line-height:.95;font-weight:900;letter-spacing:-1px}.estado{font-size:19px;font-weight:900;border:2px solid #777;border-radius:8px;padding:10px 13px;text-align:center;white-space:nowrap}.contexto{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:7px;padding:14px 0 14px;border-bottom:1px solid #303030;min-height:82px}.destino,.cliente{font-size:28px;font-weight:900}.cliente{font-size:24px}
+.contexto{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px;padding-bottom:7px;border-bottom:1px solid #303030}.destino,.cliente{font-size:15px;font-weight:900}.cliente-secundario{font-size:16px;font-weight:900;margin-top:5px}.horario{font-size:14px;font-weight:900;margin:7px 0 0}.meta{font-size:11px;color:#aaa;margin:4px 0 5px}.tiempo-pedido{font-size:13px;color:#aaa;font-weight:800;margin:6px 0 2px}
+.productos{margin-top:5px;min-height:0;overflow:visible}.producto{padding:8px 0 7px;border-top:1px solid #3a3a3a}.producto:last-child{border-bottom:1px solid #333}.producto strong{display:block;font-size:25px;line-height:1.1;font-weight:900}.cantidad{font-size:32px;font-weight:900;margin-right:5px}.nombre-producto{font-size:25px;font-weight:900}.detalle{font-size:15px;color:#eee;margin-top:4px;line-height:1.25;font-weight:700}
 .observacion{margin-top:8px;padding:9px;border-radius:7px;background:#292929;border-left:4px solid #fff;font-size:14px;line-height:1.25;font-weight:900}.pedido button{width:100%;border:0;border-radius:7px;padding:12px;margin-top:auto;font-size:14px;font-weight:900;cursor:pointer;flex:0 0 auto}.btn-listo,.btn-entregado,.btn-marchar{background:#fff;color:#111}.en-marcha{border-left:5px solid #5aa9ff}.listo{border-left:5px solid #63c174}
 .vacio{color:#666;font-size:14px;padding:10px 4px}
-@media(max-width:1100px){main{grid-template-columns:1fr;overflow:auto;height:auto;min-height:calc(100vh - 68px)}html,body{overflow:auto}.seccion{min-height:500px}.grid{overflow-y:auto}.titulo{font-size:22px}}
-@media(max-width:650px){header{height:auto;padding:10px 12px}.header-derecha{gap:7px}.btn-logout{padding:7px 9px;font-size:11px}.reloj{font-size:17px}main{padding:10px}.seccion{min-height:420px}.pedido{padding:10px}.producto strong{font-size:20px}.cantidad{font-size:26px}.nombre-producto{font-size:20px}}
+.grid:has(.pedido:nth-child(2)) .cabecera{min-height:86px}.grid:has(.pedido:nth-child(2)) .numero{font-size:48px}.grid:has(.pedido:nth-child(2)) .estado{font-size:16px;padding:8px 10px}.grid:has(.pedido:nth-child(2)) .contexto{min-height:62px;padding:10px 0}.grid:has(.pedido:nth-child(2)) .destino,.grid:has(.pedido:nth-child(2)) .cliente{font-size:21px}.grid:has(.pedido:nth-child(3)) .cabecera{min-height:70px}.grid:has(.pedido:nth-child(3)) .numero{font-size:40px}.grid:has(.pedido:nth-child(3)) .estado{font-size:13px;padding:7px 9px}.grid:has(.pedido:nth-child(3)) .contexto{min-height:52px;padding:7px 0}.grid:has(.pedido:nth-child(3)) .destino,.grid:has(.pedido:nth-child(3)) .cliente{font-size:18px}@media(max-width:1100px){main{grid-template-columns:1fr;overflow:auto;height:auto;min-height:calc(100vh - 68px)}html,body{overflow:auto}.seccion{min-height:500px}.grid{overflow-y:auto}.titulo{font-size:22px}}
+@media(max-width:650px){header{height:auto;padding:10px 12px}.header-derecha{gap:7px}.btn-logout{padding:7px 9px;font-size:11px}.reloj{font-size:17px}main{padding:10px}.seccion{min-height:420px}.pedido{padding:10px}.cabecera{min-height:74px}.numero{font-size:44px}.estado{font-size:14px;padding:7px 9px}.contexto{min-height:58px;padding:9px 0}.destino,.cliente{font-size:21px}.cliente{font-size:18px}.producto strong{font-size:20px}.cantidad{font-size:26px}.nombre-producto{font-size:20px}}
+/*
+   MEJORA VISUAL:
+   - Encabezado en una sola línea: #pedido | mesa/destino | estado.
+   - Productos más grandes y legibles.
+   - Las tarjetas ocupan solo el alto de su contenido.
+   - El grid nunca recorta productos/detalles; si faltan espacio y la lista crece, aparece scroll.
+*/
+
+/* AJUSTE FINAL: ENCABEZADO OPTIMIZADO PARA TV 32" 1920x1080 */
+.cabecera{
+    min-height:0 !important;
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) auto;
+    align-items:center;
+    gap:10px;
+    padding:0 !important;
+    margin:0 0 5px !important;
+}
+.identificacion{
+    display:grid;
+    grid-template-columns:auto 2px minmax(0,1fr);
+    align-items:center;
+    gap:9px;
+    min-width:0;
+}
+.numero{
+    font-size:46px !important;
+    line-height:.92;
+    white-space:nowrap;
+    letter-spacing:-1px;
+}
+.separador-identificacion{
+    width:2px;
+    height:38px;
+    background:#555;
+}
+.destino-principal{
+    min-width:0;
+    display:grid;
+    grid-template-columns:max-content minmax(0,1fr);
+    align-items:center;
+    column-gap:8px;
+    font-size:38px !important;
+    line-height:1;
+    font-weight:900;
+}
+.destino-text{
+    min-width:0;
+    white-space:nowrap;
+}
+.cliente-inline{
+    min-width:0;
+    max-width:100%;
+    font-size:22px;
+    font-weight:900;
+    line-height:1.02;
+    white-space:normal;
+    overflow-wrap:break-word;
+    word-break:normal;
+}
+.estado{
+    font-size:16px !important;
+    padding:8px 10px !important;
+    line-height:1;
+    white-space:nowrap;
+    flex:0 0 auto;
+}
+.cliente-secundario{display:none !important}
+
+/* Mantener acumulación: cada tarjeta conserva todo su contenido y el grid hace scroll. */
+.grid{
+    grid-template-columns:1fr !important;
+    grid-auto-rows:max-content !important;
+    align-content:start !important;
+    align-items:start !important;
+    gap:8px !important;
+}
+.pedido{
+    height:max-content !important;
+    min-height:0 !important;
+    padding:8px !important;
+}
+.producto strong{font-size:27px !important;line-height:1.08}
+.cantidad{font-size:34px !important}
+.nombre-producto{font-size:27px !important}
+.detalle{font-size:16px !important;line-height:1.25}
+
+/* En anchos de tarjeta menores, reducimos solo el encabezado, no la comida. */
+@media (max-width: 1500px){
+    .numero{font-size:42px !important}
+    .destino-principal{font-size:34px !important}
+    .cliente-inline{font-size:20px}
+    .separador-identificacion{height:34px}
+}
+@media (max-width: 1100px){
+    main{grid-template-columns:1fr;overflow:auto;height:auto;min-height:calc(100vh - 68px)}
+    html,body{overflow:auto}
+    .seccion{min-height:500px}
+    .grid{overflow-y:auto}
+    .titulo{font-size:22px}
+}
+@media (max-width: 650px){
+    header{height:auto;padding:10px 12px}
+    .header-derecha{gap:7px}
+    .btn-logout{padding:7px 9px;font-size:11px}
+    .reloj{font-size:17px}
+    main{padding:10px}
+    .seccion{min-height:420px}
+    .pedido{padding:10px !important}
+    .numero{font-size:36px !important}
+    .destino-principal{font-size:27px !important;grid-template-columns:1fr}
+    .cliente-inline{font-size:18px}
+    .estado{font-size:14px !important;padding:7px 9px !important}
+    .producto strong{font-size:20px !important}
+    .cantidad{font-size:26px !important}
+    .nombre-producto{font-size:20px !important}
+}
 </style>
 </head>
 <body>
@@ -265,13 +382,12 @@ function renderPedidoPendiente(pedido,indice,total){
     return `
     <article class="pedido ${u.clase}" data-pedido-id="${pedido.id}">
         <div class="cabecera">
-            <div class="numero">#${pedido.numero}</div>
+            <div class="identificacion">
+                <div class="numero">#${pedido.numero}</div>
+                <div class="separador-identificacion"></div>
+                <div class="destino-principal"><span class="destino-text">${escapeHtml(pedido.destino)}${pedido.cliente ? " -" : ""}</span>${pedido.cliente ? `<span class="cliente-inline">👤 ${escapeHtml(pedido.cliente)}</span>` : ""}</div>
+            </div>
             <div class="estado">${u.texto}</div>
-        </div>
-
-        <div class="contexto">
-            <div class="destino">${escapeHtml(pedido.destino)}</div>
-            ${pedido.cliente ? `<div class="cliente">👤 ${escapeHtml(pedido.cliente)}</div>` : ""}
         </div>
 
         ${pedido.modoRetiro === "programado" && pedido.retiroAt
@@ -294,13 +410,12 @@ function renderPedidoEnMarcha(pedido,indice,total){
     return `
     <article class="pedido en-marcha" data-pedido-id="${pedido.id}">
         <div class="cabecera">
-            <div class="numero">#${pedido.numero}</div>
+            <div class="identificacion">
+                <div class="numero">#${pedido.numero}</div>
+                <div class="separador-identificacion"></div>
+                <div class="destino-principal"><span class="destino-text">${escapeHtml(pedido.destino)}${pedido.cliente ? " -" : ""}</span>${pedido.cliente ? `<span class="cliente-inline">👤 ${escapeHtml(pedido.cliente)}</span>` : ""}</div>
+            </div>
             <div class="estado">🔵 EN MARCHA</div>
-        </div>
-
-        <div class="contexto">
-            <div class="destino">${escapeHtml(pedido.destino)}</div>
-            ${pedido.cliente ? `<div class="cliente">👤 ${escapeHtml(pedido.cliente)}</div>` : ""}
         </div>
 
         ${pedido.modoRetiro === "programado" && pedido.retiroAt
@@ -321,13 +436,12 @@ function renderPedidoListo(pedido,indice,total){
     return `
     <article class="pedido listo" data-pedido-id="${pedido.id}">
         <div class="cabecera">
-            <div class="numero">#${pedido.numero}</div>
+            <div class="identificacion">
+                <div class="numero">#${pedido.numero}</div>
+                <div class="separador-identificacion"></div>
+                <div class="destino-principal"><span class="destino-text">${escapeHtml(pedido.destino)}${pedido.cliente ? " -" : ""}</span>${pedido.cliente ? `<span class="cliente-inline">👤 ${escapeHtml(pedido.cliente)}</span>` : ""}</div>
+            </div>
             <div class="estado">🟢 LISTO</div>
-        </div>
-
-        <div class="contexto">
-            <div class="destino">${escapeHtml(pedido.destino)}</div>
-            ${pedido.cliente ? `<div class="cliente">👤 ${escapeHtml(pedido.cliente)}</div>` : ""}
         </div>
 
         ${pedido.modoRetiro === "programado" && pedido.retiroAt
