@@ -7,92 +7,120 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f3f3f3;color:#111}
-header{background:#111;color:#fff;padding:18px 24px;font-size:25px;font-weight:800}
-.contenedor{display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:18px;padding:18px;max-width:1500px;margin:auto}
-.panel{background:#fff;border-radius:14px;padding:18px;box-shadow:0 3px 14px rgba(0,0,0,.08)}
-h2{margin:0 0 14px}
-.subtitulo{font-size:18px;font-weight:800;margin:15px 0 10px}
-.destinos-principales{display:grid;grid-template-columns:repeat(6,1fr);gap:9px}
-.destino,.destino-llevar{border:0;border-radius:10px;padding:15px 8px;font-size:17px;font-weight:800;cursor:pointer;background:#e8e8e8}
+header{background:#111;color:#fff;padding:14px 24px;font-size:25px;font-weight:800;min-height:66px}
+.contenedor{display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:16px;padding:16px;max-width:1600px;margin:auto;align-items:start}
+.panel{background:#fff;border-radius:14px;padding:16px;box-shadow:0 3px 14px rgba(0,0,0,.08)}
+h2{margin:0 0 12px;font-size:24px}
+.subtitulo{font-size:18px;font-weight:800;margin:14px 0 9px}
+.destinos-principales{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.destino,.destino-llevar{border:0;border-radius:10px;padding:13px 8px;font-size:17px;font-weight:800;cursor:pointer;background:#e8e8e8}
 .destino.seleccionado,.destino-llevar.seleccionado{background:#111;color:#fff}
-.destino-llevar{width:100%;margin-top:10px;background:#dedede}
+.destino-llevar{width:100%;margin-top:9px;background:#dedede}
 .destino-llevar.seleccionado{background:#111}
-#mesasExtra{display:none;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:9px}
+#mesasExtra{display:none;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:8px}
 #mesasExtra.visible{display:grid}
-#mesasExtra .destino{padding:11px 5px;font-size:15px}
-#botonMasMesas{margin-top:9px;width:100%;border:1px solid #bbb;background:#fff;border-radius:10px;padding:11px;font-weight:800;cursor:pointer}
+#mesasExtra .destino{padding:10px 5px;font-size:15px}
+#botonMasMesas{margin-top:8px;width:100%;border:1px solid #bbb;background:#fff;border-radius:10px;padding:10px;font-weight:800;cursor:pointer}
 #botonMasMesas.activo{background:#eee}
-.categorias{display:flex;flex-wrap:wrap;gap:9px;margin:18px 0}
-.categoria{border:0;border-radius:9px;padding:12px 16px;background:#e8e8e8;font-weight:800;cursor:pointer}
+.categorias{display:flex;flex-wrap:wrap;gap:8px;margin:15px 0}
+.categoria{border:0;border-radius:9px;padding:10px 14px;background:#e8e8e8;font-weight:800;cursor:pointer;font-size:15px}
 .categoria.seleccionada{background:#111;color:#fff}
-.productos{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.producto{min-height:72px;border:1px solid #ddd;background:#fff;border-radius:12px;padding:12px;font-size:17px;font-weight:800;cursor:pointer}
+.productos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.producto{min-height:66px;border:1px solid #ddd;background:#fff;border-radius:11px;padding:11px;font-size:17px;font-weight:800;cursor:pointer}
 .producto:hover{background:#f2f2f2}
-.pedido-panel{position:sticky;top:15px;height:max-content}
-.destino-actual{background:#f0f0f0;border-radius:10px;padding:13px;font-weight:800;margin-bottom:12px}
-.campo{margin-bottom:12px}
-.campo label{display:block;font-weight:800;margin-bottom:6px}
-input,textarea,select{width:100%;border:1px solid #bbb;border-radius:9px;padding:11px;font-size:16px;background:#fff}
+.pedido-panel{position:sticky;top:12px;height:max-content}
+.destino-actual{background:#f0f0f0;border-radius:10px;padding:12px;font-weight:800;margin-bottom:10px}
+.campo{margin-bottom:11px}
+.campo label{display:block;font-weight:800;margin-bottom:5px}
+input,textarea,select{width:100%;border:1px solid #bbb;border-radius:9px;padding:10px;font-size:16px;background:#fff}
 .retiro-opciones{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.retiro-opcion{border:1px solid #bbb;background:#eee;border-radius:9px;padding:11px;font-weight:800;cursor:pointer;text-align:center}
+.retiro-opcion{border:1px solid #bbb;background:#eee;border-radius:9px;padding:10px;font-weight:800;cursor:pointer;text-align:center}
 .retiro-opcion.activa{background:#111;color:#fff;border-color:#111}
-#programadoBox{display:none;background:#f7f7f7;border-radius:10px;padding:10px;margin-top:8px}
+#programadoBox{display:none;background:#f7f7f7;border-radius:10px;padding:9px;margin-top:7px}
 #programadoBox.visible{display:block}
 .retiro-fecha-hora{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.lista-pedido{max-height:390px;overflow:auto}
-.item-pedido{border:1px solid #ddd;border-radius:10px;padding:12px;margin-bottom:9px}
+.lista-pedido{max-height:330px;overflow:auto;margin-bottom:10px}
+.item-pedido{border:1px solid #ddd;border-radius:10px;padding:11px;margin-bottom:8px}
 .item-pedido strong{display:block;font-size:16px}
-.modificaciones{font-size:14px;margin-top:5px;line-height:1.45}
-.editar,.eliminar{border:0;border-radius:7px;padding:7px 10px;margin-top:9px;font-weight:800;cursor:pointer}
+.modificaciones{font-size:13px;margin-top:5px;line-height:1.4}
+.editar,.eliminar{border:0;border-radius:7px;padding:7px 10px;margin-top:8px;font-weight:800;cursor:pointer}
 .editar{background:#e5e5e5}
 .eliminar{background:#ddd}
-textarea{resize:vertical;min-height:80px}
-#enviar{width:100%;border:0;border-radius:10px;background:#111;color:#fff;padding:16px;font-size:18px;font-weight:900;cursor:pointer}
-#mensaje{font-weight:800;margin-top:10px;min-height:20px}
+textarea{resize:vertical;min-height:76px}
+#enviar{width:100%;border:0;border-radius:10px;background:#111;color:#fff;padding:15px;font-size:18px;font-weight:900;cursor:pointer}
+#mensaje{font-weight:800;margin-top:9px;min-height:20px}
 #modalFondo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:15px;z-index:20}
 .modal{background:#fff;border-radius:15px;width:min(620px,100%);max-height:90vh;overflow:auto;padding:20px}
 .modal h2{margin-bottom:8px}
 .receta{font-size:14px;background:#f3f3f3;border-radius:8px;padding:9px;margin-bottom:10px}
-.opcion{display:flex;align-items:center;gap:10px;border:1px solid #ddd;border-radius:9px;padding:12px;margin-bottom:7px;cursor:pointer}
+.opcion{display:flex;align-items:center;gap:10px;border:1px solid #ddd;border-radius:9px;padding:11px;margin-bottom:7px;cursor:pointer}
 .opcion input{width:auto;transform:scale(1.25)}
-.guarniciones{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.guarnicion{min-height:65px;font-size:18px;font-weight:bold;padding:14px;background:#eee;border:0;border-radius:9px;cursor:pointer}
+.guarniciones{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.guarnicion{min-height:60px;font-size:17px;font-weight:bold;padding:12px;background:#eee;border:0;border-radius:9px;cursor:pointer}
 .guarnicion.seleccionada{background:#111;color:#fff}
-.acciones-modal{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
-.acciones-modal button{min-height:65px;font-size:19px;font-weight:bold;padding:14px;border:0;border-radius:9px;cursor:pointer}
+.acciones-modal{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.acciones-modal button{min-height:60px;font-size:18px;font-weight:bold;padding:12px;border:0;border-radius:9px;cursor:pointer}
 #cancelarModal{background:#ddd}
 #confirmarModal{background:#111;color:#fff}
-.modal .rapido{min-height:65px;font-size:19px;font-weight:bold;padding:14px;background:#eee;border:0;border-radius:9px;cursor:pointer}
+.modal .rapido{min-height:60px;font-size:18px;font-weight:bold;padding:12px;background:#eee;border:0;border-radius:9px;cursor:pointer}
+#pedidosHoyBox{max-width:1600px!important}
 @media(max-width:1050px){.contenedor{grid-template-columns:1fr}.pedido-panel{position:static}.destinos-principales{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:650px){.productos{grid-template-columns:1fr 1fr}.destinos-principales{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:650px){header{font-size:20px;padding:12px 14px}.contenedor{padding:10px}.productos{grid-template-columns:1fr 1fr}.destinos-principales{grid-template-columns:repeat(2,1fr)}.categoria{padding:10px 11px;font-size:14px}}
+</style>
+
+<style>
+:root{
+  --naranja:#ff7a00;--naranja-suave:#fff2e6;--negro:#111;--gris:#f5f5f5;--borde:#e5e5e5;
+}
+html{scroll-behavior:smooth}
+body{background:linear-gradient(135deg,#f7f7f7 0%,#f0f0f0 100%);color:#161616}
+.app-header{position:sticky;top:0;z-index:30;min-height:82px;padding:10px 28px;background:linear-gradient(110deg,#101010,#171717);color:#fff;display:grid;grid-template-columns:minmax(290px,1fr) auto minmax(250px,1fr);align-items:center;gap:24px;box-shadow:0 5px 22px rgba(0,0,0,.18)}
+.marca-header{display:flex;align-items:center;gap:13px;min-width:0}.logo-header{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--naranja);box-shadow:0 0 0 3px rgba(255,122,0,.12)}
+.marca-nombre{font-size:25px;font-weight:950;letter-spacing:.5px;white-space:nowrap}.marca-subtitulo{font-size:12px;letter-spacing:5px;font-weight:900;color:var(--naranja);margin-top:2px}
+.fecha-hora-header{display:flex;align-items:center;justify-content:center;gap:24px;white-space:nowrap}.fecha-header,.hora-header{display:flex;align-items:center;gap:8px;font-weight:800}.fecha-header{font-size:15px}.hora-header{font-size:21px}.fecha-icono,.hora-icono{color:var(--naranja);font-size:21px}.hora-header{border-left:1px solid #555;padding-left:24px}
+.acciones-header{display:flex;justify-content:flex-end;gap:9px}.btn-header{border-radius:10px;padding:11px 15px;font-weight:900;cursor:pointer;transition:.18s ease}.btn-cocina{background:#171d2d;color:#fff;border:1px solid #2a3650}.btn-cocina:hover{background:#202a40;transform:translateY(-1px)}.btn-sesion{background:#fff;color:#111;border:1px solid #ddd}.btn-sesion:hover{background:#f3f3f3}
+.contenedor{max-width:1700px;grid-template-columns:minmax(0,1fr) 410px;gap:18px;padding:18px}.panel{border-radius:18px;padding:18px;box-shadow:0 8px 30px rgba(0,0,0,.07);border:1px solid rgba(0,0,0,.04)}
+.seccion-titulo{display:flex;align-items:center;gap:8px;font-size:23px;margin-bottom:14px}.titulo-icono,.label-icono{color:var(--naranja)}.subseccion-titulo{font-size:18px;font-weight:900;margin:18px 0 9px;color:#222}.subseccion-titulo span{color:var(--naranja)}
+.destinos-principales{gap:9px}.destino,.destino-llevar{border:1px solid #e1e1e1;border-radius:12px;background:#f0f0f0;padding:14px 8px;transition:.16s ease;box-shadow:0 1px 0 rgba(0,0,0,.02)}.destino:hover,.destino-llevar:hover{transform:translateY(-1px);background:#e9e9e9}.destino.seleccionado,.destino-llevar.seleccionado{background:var(--naranja);color:#fff;border-color:var(--naranja);box-shadow:0 5px 14px rgba(255,122,0,.25)}
+#botonMasMesas{border-color:#ddd;color:#333;transition:.16s}.destino-llevar{background:#fff7ef;border-color:#ffd5b0;color:#d96500;font-size:17px}.destino-llevar.seleccionado{background:var(--naranja);color:#fff}
+.categorias{gap:7px;margin:0 0 12px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:3px}.categoria{border:1px solid #e4e4e4;border-radius:11px;padding:11px 13px;background:#f0f1f2;white-space:nowrap;transition:.16s}.categoria:hover{background:#e7e7e7;transform:translateY(-1px)}.categoria.seleccionada{background:#111;color:#fff;border-color:#111;box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.productos{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.producto{min-height:92px;border:1px solid #e2e2e2;border-radius:14px;padding:14px 15px;background:linear-gradient(145deg,#fff,#fafafa);font-size:17px;font-weight:900;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;position:relative;text-align:left;transition:.16s ease;box-shadow:0 2px 8px rgba(0,0,0,.035);overflow:hidden}.producto::after{content:'＋  AGREGAR';margin-top:9px;font-size:11px;letter-spacing:.5px;color:#d96500;font-weight:950}.producto:hover{background:#fff;border-color:#ffbf88;box-shadow:0 6px 18px rgba(0,0,0,.08);transform:translateY(-2px)}.producto:active{transform:scale(.985)}
+.pedido-panel{top:100px}.pedido-panel .seccion-titulo{justify-content:space-between}.destino-actual{background:linear-gradient(135deg,#f7f7f7,#eeeeee);border:1px solid #e4e4e4;border-radius:12px;padding:14px;margin-bottom:12px}.lista-pedido{max-height:350px}.item-pedido{border:1px solid #e3e3e3;border-radius:13px;padding:12px;margin-bottom:9px;background:#fff;box-shadow:0 2px 9px rgba(0,0,0,.035)}.item-pedido strong{font-size:17px}.modificaciones{color:#666;background:#fafafa;border-radius:8px;padding:6px 8px}.editar,.eliminar{border-radius:8px}.editar{background:#f0f0f0}.eliminar{background:#fff0f0;color:#a11}
+.campo label{font-size:15px}.opcional-label{font-weight:600;color:#999;font-size:12px}input,textarea,select{border-color:#ddd;box-shadow:inset 0 1px 2px rgba(0,0,0,.025)}input:focus,textarea:focus,select:focus{outline:2px solid rgba(255,122,0,.16);border-color:#ff9b45}textarea{min-height:88px}
+#enviar{background:linear-gradient(135deg,#111,#1b1b1b);border-radius:12px;padding:16px;box-shadow:0 7px 18px rgba(0,0,0,.15);transition:.16s}.#enviar:hover{transform:translateY(-1px)}#mensaje{border-radius:10px}
+.pedidos-hoy-panel{max-width:1700px!important}.pedidos-hoy-titulo{font-size:21px;font-weight:950;margin-bottom:12px}.pedidos-hoy-titulo .titulo-icono{margin-right:4px}
+#pedidosHoyLista>div[style*="border:1px"]{border-radius:13px!important;border-color:#e5e5e5!important;box-shadow:0 2px 9px rgba(0,0,0,.035)}
+#modalFondo{background:rgba(10,10,10,.68);backdrop-filter:blur(3px)}.modal{border-radius:18px;box-shadow:0 18px 60px rgba(0,0,0,.25)}.guarnicion{background:#f0f0f0}.guarnicion.seleccionada{background:#111}
+@media(max-width:1150px){.app-header{grid-template-columns:1fr auto}.fecha-hora-header{grid-column:1/-1;grid-row:2;justify-content:flex-start}.acciones-header{grid-column:2;grid-row:1}.contenedor{grid-template-columns:1fr}.pedido-panel{position:static}.productos{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.app-header{padding:9px 12px;grid-template-columns:1fr auto;gap:8px}.logo-header{width:50px;height:50px}.marca-nombre{font-size:16px}.marca-subtitulo{font-size:9px;letter-spacing:3px}.fecha-hora-header{font-size:12px;gap:12px}.fecha-header{font-size:12px}.hora-header{font-size:17px;padding-left:12px}.btn-header{padding:9px 10px;font-size:11px}.btn-cocina{font-size:0}.btn-cocina:first-letter{font-size:16px}.contenedor{padding:10px}.panel{padding:14px;border-radius:15px}.productos{grid-template-columns:1fr 1fr}.producto{min-height:82px;font-size:15px}.categoria{padding:9px 11px;font-size:13px}.destinos-principales{grid-template-columns:repeat(2,1fr)}}
+</style>
+
+<style>
+.pedido-activo-card{border:1px solid #e3e3e3;border-radius:14px;padding:13px;margin-bottom:10px;background:#fff;box-shadow:0 3px 12px rgba(0,0,0,.045);position:relative;overflow:hidden}.pedido-activo-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:#bbb}.pedido-activo-card.estado-pendiente:before{background:#f2c94c}.pedido-activo-card.estado-en_marcha:before{background:#238be0}.pedido-activo-card.estado-listo:before{background:#20a050}.pedido-activo-cabecera{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:7px}.pedido-activo-numero{font-size:22px}.pedido-activo-estado{padding:5px 9px;border-radius:999px;font-size:11px;font-weight:900;background:#eee}.estado-pendiente .pedido-activo-estado{background:#fff4bd}.estado-en_marcha .pedido-activo-estado{background:#e1f1ff;color:#1268a9}.estado-listo .pedido-activo-estado{background:#def7e7;color:#11743a}.pedido-activo-destino{font-weight:900;margin-bottom:7px}.pedido-activo-productos{font-size:14px;line-height:1.45;padding:8px 9px;background:#f7f8f9;border-radius:9px}.pedido-activo-observacion{background:#fff4e8;border-left:4px solid var(--naranja);padding:7px 9px;margin-top:8px;font-size:13px;border-radius:7px}.pedido-activo-entregar{width:100%;padding:11px;border:0;border-radius:9px;background:#169447;color:#fff;font-weight:900;cursor:pointer;margin-top:9px}.pedido-activo-anular{width:100%;padding:9px;border:1px solid #f0caca;border-radius:9px;background:#fff7f7;color:#b42318;font-weight:800;cursor:pointer;margin-top:8px}.pedido-activo-anular:hover{background:#fff0f0}
 </style>
 </head>
 <body>
-<header style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
-<span>DRUGSTORE LA ROTONDA — COMANDAS</span>
-<button id="cerrarSesion" type="button" style="border:0;border-radius:8px;padding:9px 14px;background:#fff;color:#111;font-weight:800;cursor:pointer;">Cerrar sesión</button>
-        <button
-            id="irCocina"
-            type="button"
-            onclick="window.open('/cocina.html', '_blank')"
-            style="
-                margin-left: 10px;
-                padding: 10px 16px;
-                border: 0;
-                border-radius: 8px;
-                background: #111827;
-                color: white;
-                font-weight: 700;
-                cursor: pointer;
-            "
-        >
-            🍳 COCINA
-        </button>
+<header class="app-header">
+    <div class="marca-header">
+        <img class="logo-header" src="logo.jpg" alt="Drugstore La Rotonda">
+        <div>
+            <div class="marca-nombre">DRUGSTORE LA ROTONDA</div>
+            <div class="marca-subtitulo">COMANDAS</div>
+        </div>
+    </div>
+    <div class="fecha-hora-header">
+        <div class="fecha-header"><span class="fecha-icono">▣</span><span id="fechaActual"></span></div>
+        <div class="hora-header"><span class="hora-icono">◷</span><span id="horaActual">--:--</span></div>
+    </div>
+    <div class="acciones-header">
+        <button id="irCocina" class="btn-header btn-cocina" type="button" onclick="window.open('/cocina.html', '_blank')">🍳 COCINA</button>
+        <button id="cerrarSesion" class="btn-header btn-sesion" type="button">Cerrar sesión</button>
+    </div>
 </header>
 
 <div class="contenedor">
 <main class="panel">
-<h2>Destino</h2>
+<h2 class="seccion-titulo"><span class="titulo-icono">⌖</span>Destino</h2>
 
 <div class="destinos-principales">
 <button class="destino" data-destino="Mesa 1">Mesa 1</button>
@@ -123,22 +151,24 @@ textarea{resize:vertical;min-height:80px}
 <button id="botonMasMesas">+ MÁS MESAS</button>
 <button class="destino-llevar" data-destino="Para llevar">🛍️ PARA LLEVAR</button>
 
+<div class="subseccion-titulo"><span>🍽️</span> Categorías</div>
 <div class="categorias">
-<button class="categoria" data-categoria="empanadas">Empanadas</button>
-<button class="categoria" data-categoria="sandwiches">Sándwiches</button>
-<button class="categoria" data-categoria="hamburguesas">Hamburguesas</button>
-<button class="categoria" data-categoria="platos">Al plato</button>
-<button class="categoria" data-categoria="miga">Miga</button>
-<button class="categoria" data-categoria="baguettes">Baguettes</button>
-<button class="categoria" data-categoria="tartas">Tartas</button>
-<button class="categoria" data-categoria="pizzas">Pizzas</button>
+<button class="categoria" data-categoria="empanadas">🥟 Empanadas</button>
+<button class="categoria" data-categoria="sandwiches">🥪 Sándwiches</button>
+<button class="categoria" data-categoria="hamburguesas">🍔 Hamburguesas</button>
+<button class="categoria" data-categoria="platos">🍽️ Al plato</button>
+<button class="categoria" data-categoria="miga">🥪 Miga</button>
+<button class="categoria" data-categoria="baguettes">🥖 Baguettes</button>
+<button class="categoria" data-categoria="tartas">🥧 Tartas</button>
+<button class="categoria" data-categoria="pizzas">🍕 Pizzas</button>
+<button class="categoria" data-categoria="bebidas">🥤 Bebidas</button>
 </div>
 
 <div id="productos" class="productos"></div>
 </main>
 
 <aside class="panel pedido-panel">
-<h2>Comanda</h2>
+<h2 class="seccion-titulo comanda-titulo"><span class="titulo-icono">▤</span>Comanda </h2>
 <div id="pedidoDestino" class="destino-actual">Seleccioná una mesa o Para llevar</div>
 
 <div id="clienteBox" class="campo" style="display:none">
@@ -170,7 +200,7 @@ textarea{resize:vertical;min-height:80px}
 <div id="listaPedido" class="lista-pedido"><p>No hay productos agregados.</p></div>
 
 <div class="campo">
-<label for="observacion">Observación</label>
+<label for="observacion"><span class="label-icono">▤</span> Observación <span class="opcional-label">(opcional)</span></label>
 <textarea id="observacion" placeholder="Indicaciones generales para cocina..."></textarea>
 </div>
 
@@ -179,8 +209,8 @@ textarea{resize:vertical;min-height:80px}
 </aside>
 </div>
 
-<div id="pedidosHoyBox" class="panel" style="max-width:1500px;margin:0 auto 18px;">
-<div style="font-size:18px;font-weight:800;margin-bottom:10px;">PEDIDOS DE HOY</div>
+<div id="pedidosHoyBox" class="panel pedidos-hoy-panel" style="max-width:1500px;margin:0 auto 18px;">
+<div class="pedidos-hoy-titulo"><span><span class="titulo-icono">◷</span> Pedidos de hoy</span></div>
 <div id="pedidosHoyLista"><div style="color:#777;">Cargando pedidos...</div></div>
 </div>
 
@@ -196,5 +226,17 @@ textarea{resize:vertical;min-height:80px}
 </div>
 
 <script src="app.js"></script>
+<script>
+(function(){
+  const fecha=document.getElementById("fechaActual");
+  const hora=document.getElementById("horaActual");
+  function actualizar(){
+    const ahora=new Date();
+    if(fecha) fecha.textContent=new Intl.DateTimeFormat("es-AR",{timeZone:"America/Argentina/Buenos_Aires",weekday:"long",day:"2-digit",month:"long",year:"numeric"}).format(ahora).replace(/^./,c=>c.toUpperCase());
+    if(hora) hora.textContent=new Intl.DateTimeFormat("es-AR",{timeZone:"America/Argentina/Buenos_Aires",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false}).format(ahora);
+  }
+  actualizar(); setInterval(actualizar,1000);
+})();
+</script>
 </body>
 </html>

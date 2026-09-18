@@ -149,11 +149,40 @@ main{height:calc(100vh - 68px);padding:14px 16px;max-width:2200px;margin:auto;di
     .nombre-producto{font-size:20px !important}
 }
 </style>
+
+<style>
+:root{--orange:#ff7a00;--yellow:#ffd84d;--blue:#1386df;--green:#16a34a}
+body{background:radial-gradient(circle at top,#191d21 0%,#0a0b0c 60%);font-family:Arial,Helvetica,sans-serif}
+header{height:88px;padding:9px 24px;background:linear-gradient(110deg,#080909,#15191c);border-bottom:1px solid #333;box-shadow:0 5px 22px rgba(0,0,0,.3);display:grid;grid-template-columns:minmax(330px,1fr) auto minmax(300px,1fr);gap:24px}
+.marca-cocina{display:flex;align-items:center;gap:13px}.logo-cocina{width:68px;height:68px;border-radius:50%;object-fit:cover;border:2px solid var(--orange);box-shadow:0 0 0 3px rgba(255,122,0,.12)}
+.titulo{font-size:25px;letter-spacing:.5px}.subtitulo-cocina{font-size:14px;letter-spacing:7px;font-weight:900;color:var(--orange);margin-top:2px}
+.fecha-hora-cocina{display:flex;align-items:center;gap:25px;white-space:nowrap}.fecha-cocina{display:flex;align-items:center;gap:8px;font-size:15px}.fecha-cocina span,.reloj-icono{color:var(--orange);font-size:21px}.reloj{font-size:23px;border-left:1px solid #555;padding-left:25px}
+.header-derecha{justify-content:flex-end;gap:10px}.estado-online{border:1px solid #315a3c;background:#102017;color:#7fe09a;border-radius:10px;padding:10px 13px;font-size:13px;font-weight:900}.btn-logout{border-color:#555;border-radius:10px;padding:10px 14px;font-size:12px}.btn-logout:hover{background:#252525}
+main{height:calc(100vh - 88px);padding:14px 16px 18px;grid-template-columns:2fr 2fr 1fr;gap:14px;max-width:2300px}
+.seccion{background:linear-gradient(160deg,#151718,#0f1112);border:1px solid #34383a;border-radius:16px;padding:10px;box-shadow:0 10px 30px rgba(0,0,0,.25);position:relative}.seccion h2{font-size:20px;padding:9px 10px;margin:0 0 9px;border-radius:11px;letter-spacing:.2px}.seccion:nth-child(1) h2{background:linear-gradient(90deg,var(--yellow),#ffe991);color:#111}.seccion:nth-child(2) h2{background:linear-gradient(90deg,var(--blue),#36a4f3);color:#fff}.seccion:nth-child(3) h2{background:linear-gradient(90deg,var(--green),#28b75b);color:#fff}.contador{font-size:17px;color:inherit;margin-left:5px}
+.grid{gap:9px;padding:1px 3px 3px 1px}.pedido{background:linear-gradient(145deg,#fff,#f4f6f7);color:#111;border:2px solid #ddd;border-radius:14px;padding:10px;box-shadow:0 5px 18px rgba(0,0,0,.16)}.pedido.preparar{border-color:#ffc928}.pedido.urgente{border-color:#ff3b30;box-shadow:0 0 0 2px rgba(255,59,48,.13),0 5px 20px rgba(0,0,0,.18)}.pedido.demorado{border-color:#e11d48;box-shadow:0 0 0 2px rgba(225,29,72,.16),0 5px 20px rgba(0,0,0,.2)}.pedido.en-marcha{border:2px solid #8bc9f5;border-left:5px solid var(--blue)}.pedido.listo{border:2px solid #82d79b;border-left:5px solid var(--green)}
+.cabecera{padding:2px 2px 7px!important;margin-bottom:3px!important}.numero{font-size:45px!important;color:#111!important}.destino-principal{font-size:25px!important;color:#111!important}.cliente-inline{font-size:16px;color:#333}.separador-identificacion{background:#c9c9c9}.estado{border:0!important;border-radius:9px!important;font-size:12px!important;padding:8px 10px!important;background:#ececec;color:#222}.pedido.urgente .estado,.pedido.demorado .estado{background:#ffe1df;color:#b91c1c}.pedido.preparar .estado{background:#fff0a8}.en-marcha .estado{background:#dceeff;color:#0969b4}.listo .estado{background:#dcfce7;color:#087b32}
+.tiempo-pedido{font-size:13px!important;color:#555!important;font-weight:900!important;background:#f0f2f3;border-radius:7px;padding:5px 7px;display:inline-block}.horario{font-size:12px!important;color:#555!important;background:#fff7ed;border-radius:7px;padding:5px 7px}.meta{font-size:11px!important;color:#666!important}.producto{padding:7px 2px!important;border-top:1px solid #e1e5e8!important}.producto strong{font-size:20px!important;line-height:1.1!important}.cantidad{font-size:25px!important;color:#111}.nombre-producto{font-size:20px!important;color:#111}.detalle{font-size:13px!important;color:#4b5563!important;background:#f2f5f7;border-radius:7px;padding:5px 7px;margin-top:5px}.observacion{background:#fff4e8;color:#4b2b10;border-left:4px solid var(--orange);font-size:12px;padding:8px}.pedido button{margin-top:8px;border-radius:10px;padding:12px;font-size:15px;box-shadow:0 3px 8px rgba(0,0,0,.12)}.btn-marchar{background:linear-gradient(135deg,#ff7800,#ff9a2e)!important;color:#fff!important}.btn-listo{background:linear-gradient(135deg,#087fd6,#1d9cf0)!important;color:#fff!important}.btn-entregado{background:linear-gradient(135deg,#159947,#23b95e)!important;color:#fff!important}
+.vacio{color:#858b8f;text-align:center;font-weight:700;padding:18px}.seccion:nth-child(3)::after{content:'Buen equipo\A Grandes momentos';white-space:pre;text-align:center;display:block;color:#4d5356;font-family:cursive;font-size:25px;line-height:1.15;margin:20px 10px 10px;opacity:.8}
+@media(max-width:1300px){header{grid-template-columns:1fr auto}.fecha-hora-cocina{grid-column:1/-1;grid-row:2;justify-content:flex-start}header{height:118px}main{height:calc(100vh - 118px)}}
+@media(max-width:1100px){main{height:auto;grid-template-columns:1fr;overflow:auto}.seccion{min-height:500px}html,body{overflow:auto}}
+@media(max-width:650px){header{height:auto;padding:9px 12px;grid-template-columns:1fr auto;gap:8px}.logo-cocina{width:52px;height:52px}.titulo{font-size:16px}.subtitulo-cocina{font-size:10px;letter-spacing:4px}.fecha-hora-cocina{grid-column:1/-1;grid-row:2;gap:12px}.fecha-cocina{font-size:11px}.reloj{font-size:17px;padding-left:12px}.estado-online{display:none}.btn-logout{padding:8px;font-size:10px}main{padding:10px}.seccion{min-height:420px}.numero{font-size:36px!important}.destino-principal{font-size:21px!important}.producto strong,.nombre-producto{font-size:18px!important}.cantidad{font-size:23px!important}}
+</style>
 </head>
 <body>
 <header>
-<div class="titulo">COCINA — COMANDAS</div>
-<div class="header-derecha"><div id="reloj" class="reloj"></div><button class="btn-logout" type="button" onclick="cerrarSesion()">CERRAR SESIÓN</button></div>
+  <div class="marca-cocina">
+    <img src="logo.jpg" alt="Drugstore La Rotonda" class="logo-cocina">
+    <div>
+      <div class="titulo">DRUGSTORE LA ROTONDA</div>
+      <div class="subtitulo-cocina">COCINA</div>
+    </div>
+  </div>
+  <div class="fecha-hora-cocina">
+    <div class="fecha-cocina"><span>▣</span><strong id="fechaCocina"></strong></div>
+    <div class="reloj"><span class="reloj-icono">◷</span> <span id="reloj">--:--:--</span></div>
+  </div>
+  <div class="header-derecha"><div class="estado-online">● EN LÍNEA</div><button class="btn-logout" type="button" onclick="cerrarSesion()">CERRAR SESIÓN</button></div>
 </header>
 <main>
 <section class="seccion">
@@ -365,6 +394,7 @@ function renderProductos(pedido, compacto=false){
         let detalles = [];
         if(p.preparacion) detalles.push(p.preparacion);
         if(p.guarnicion) detalles.push("Guarnición: "+p.guarnicion);
+        if(p.tostado) detalles.push(p.tostado);
         detalles.push(...(p.modificaciones||[]));
         detalles.push(...(p.adicionales||[]).map(a=>"+ "+a));
 
@@ -611,6 +641,16 @@ eventos.onmessage = event => {
 eventos.onerror = () => {
     // EventSource intenta reconectar automáticamente.
 };
+
+(function(){
+    const fecha = document.getElementById("fechaCocina");
+    function actualizarFecha(){
+        const ahora = new Date();
+        if(fecha) fecha.textContent = new Intl.DateTimeFormat("es-AR",{timeZone:"America/Argentina/Buenos_Aires",weekday:"long",day:"2-digit",month:"long",year:"numeric"}).format(ahora).replace(/^./,c=>c.toUpperCase());
+    }
+    actualizarFecha();
+    setInterval(actualizarFecha,60000);
+})();
 
 setInterval(()=>{
     document.getElementById("reloj").textContent =

@@ -33,14 +33,17 @@ const productos = [
     {categoria:"platos",nombre:"Milanesa de pollo AL PLATO",ingredientes:["Milanesa de pollo"],guarnicion:true,modificaciones:true,huevo:true,aji:true},
     {categoria:"platos",nombre:"Milanesa de pollo napolitana AL PLATO",ingredientes:["Milanesa de pollo","Jamón","Queso"],guarnicion:true,modificaciones:true,huevo:true,aji:true},
     {categoria:"platos",nombre:"Omelet",tipo:"cerrado"},
+    {categoria:"platos",nombre:"Porción de papas",tipo:"cerrado"},
 
-    {categoria:"miga",nombre:"Miga Jamón y Queso",tipo:"cerrado"},
-    {categoria:"miga",nombre:"Miga Salame y Queso",tipo:"cerrado"},
-    {categoria:"miga",nombre:"Miga Ternera y Queso",tipo:"cerrado"},
+    {categoria:"miga",nombre:"Miga Jamón y Queso",tipo:"cerrado",tostado:true},
+    {categoria:"miga",nombre:"Miga Salame y Queso",tipo:"cerrado",tostado:true},
+    {categoria:"miga",nombre:"Miga Ternera y Queso",tipo:"cerrado",tostado:true},
 
-    {categoria:"baguettes",nombre:"Baguette Jamón y Queso",ingredientes:["Jamón","Queso"],modificaciones:true,aderezo:true,huevo:false,aji:false},
-    {categoria:"baguettes",nombre:"Baguette Salame y Queso",ingredientes:["Salame","Queso"],modificaciones:true,aderezo:true,huevo:false,aji:false},
-    {categoria:"baguettes",nombre:"Baguette Ternera y Queso",ingredientes:["Ternera","Queso"],modificaciones:true,aderezo:true,huevo:false,aji:false},
+    {categoria:"baguettes",nombre:"Baguette Jamón y Queso",tostado:true,ingredientes:["Jamón","Queso"],modificaciones:true,aderezo:true,huevo:false,aji:false},
+    {categoria:"baguettes",nombre:"Baguette Salame y Queso",tostado:true,ingredientes:["Salame","Queso"],modificaciones:true,aderezo:true,huevo:false,aji:false},
+    {categoria:"baguettes",nombre:"Baguette Ternera y Queso",tostado:true,ingredientes:["Ternera","Queso"],modificaciones:true,aderezo:true,huevo:false,aji:false},
+
+    {categoria:"bebidas",nombre:"Agua caliente (termo)",tipo:"cerrado"},
 
     {categoria:"tartas",nombre:"Tarta Jamón y Queso",tipo:"cerrado"},
     {categoria:"tartas",nombre:"Tarta Jamón, Queso y Huevo",tipo:"cerrado"},
@@ -236,6 +239,37 @@ function abrirConfiguracion(producto, existente = null, indice = null) {
         contenido.appendChild(preparacion);
     }
 
+    if (producto.tostado) {
+        const subtitulo = document.createElement("div");
+        subtitulo.className = "subtitulo";
+        subtitulo.textContent = "Preparación";
+        contenido.appendChild(subtitulo);
+
+        const tostadoBox = document.createElement("div");
+        tostadoBox.className = "guarniciones";
+
+        ["TOSTADO", "SIN TOSTAR"].forEach(tipo => {
+            const b = document.createElement("button");
+            b.type = "button";
+            b.className = "guarnicion";
+            b.dataset.tostado = tipo;
+            b.textContent = tipo;
+
+            if ((existente?.tostado || "TOSTADO") === tipo) {
+                b.classList.add("seleccionada");
+            }
+
+            b.addEventListener("click", () => {
+                tostadoBox.querySelectorAll(".guarnicion").forEach(x => x.classList.remove("seleccionada"));
+                b.classList.add("seleccionada");
+            });
+
+            tostadoBox.appendChild(b);
+        });
+
+        contenido.appendChild(tostadoBox);
+    }
+
     if (producto.ingredientes && producto.modificaciones) {
         const receta = document.createElement("div");
         receta.className = "receta";
@@ -381,13 +415,18 @@ document.getElementById("confirmarModal").addEventListener("click", () => {
         preparacion = document.querySelector("[data-preparacion].seleccionada")?.dataset.preparacion || "HORNEADAS";
     }
 
+    const tostado = producto.tostado
+        ? (document.querySelector("[data-tostado].seleccionada")?.dataset.tostado || "TOSTADO")
+        : null;
+
     const final = {
         nombre: producto.nombre,
         cantidad: cantidadConfigurando,
         modificaciones,
         adicionales,
         guarnicion,
-        preparacion
+        preparacion,
+        tostado
     };
 
     if (editandoProductoIndex !== null) {
@@ -406,7 +445,8 @@ function agregarProducto(producto) {
         JSON.stringify(item.modificaciones) === JSON.stringify(producto.modificaciones) &&
         JSON.stringify(item.adicionales) === JSON.stringify(producto.adicionales) &&
         item.guarnicion === producto.guarnicion &&
-        item.preparacion === producto.preparacion
+        item.preparacion === producto.preparacion &&
+        item.tostado === producto.tostado
     );
 
     if (existente) existente.cantidad += producto.cantidad;
@@ -435,6 +475,10 @@ function mostrarPedido() {
 
         if (producto.guarnicion) {
             detalles.push("Guarnición: " + producto.guarnicion);
+        }
+
+        if (producto.tostado) {
+            detalles.push(producto.tostado);
         }
 
         detalles.push(...(producto.modificaciones || []));
@@ -608,6 +652,7 @@ function construirDetalleTicket(producto) {
 
     if (producto.preparacion) detalles.push(producto.preparacion);
     if (producto.guarnicion) detalles.push("Guarnición: " + producto.guarnicion);
+    if (producto.tostado) detalles.push(producto.tostado);
     detalles.push(...(producto.modificaciones || []));
     detalles.push(...(producto.adicionales || []).map(a => "+ " + a));
 
@@ -816,27 +861,19 @@ function mostrarPedidosHoy() {
             en_marcha: "EN MARCHA",
             listo: "LISTO"
         }[pedido.estado] || pedido.estado;
-        const estadoColor = {
-            pendiente: "#fff3cd",
-            en_marcha: "#dbeafe",
-            listo: "#dcfce7"
-        }[pedido.estado] || "#f5f5f5";
-
         return `
-            <div style="border:1px solid #ddd;border-radius:12px;padding:12px;margin-bottom:10px;background:white;">
-                <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;">
-                    <strong style="font-size:20px;">#${pedido.numero}</strong>
-                    <span style="background:${estadoColor};padding:5px 8px;border-radius:7px;font-size:12px;font-weight:800;">${estadoTexto}</span>
+            <div class="pedido-activo-card estado-${pedido.estado}">
+                <div class="pedido-activo-cabecera">
+                    <strong class="pedido-activo-numero">#${pedido.numero}</strong>
+                    <span class="pedido-activo-estado">${estadoTexto}</span>
                 </div>
-                <div style="font-weight:700;margin-bottom:6px;">
-                    ${escapeHtml(pedido.destino || "")}${pedido.cliente ? " — " + escapeHtml(pedido.cliente) : ""}
-                </div>
-                <div style="font-size:14px;line-height:1.4;margin-bottom:8px;">
+                <div class="pedido-activo-destino">${escapeHtml(pedido.destino || "")}${pedido.cliente ? " — " + escapeHtml(pedido.cliente) : ""}</div>
+                <div class="pedido-activo-productos">
                     ${productos.map(producto => `<div><strong>${producto.cantidad} ×</strong> ${escapeHtml(producto.nombre || "")}</div>`).join("")}
                 </div>
-                ${pedido.observacion ? `<div style="background:#fff7ed;border-left:4px solid #f97316;padding:7px;margin-bottom:8px;font-size:13px;"><strong>Obs.:</strong> ${escapeHtml(pedido.observacion)}</div>` : ""}
-                ${pedido.estado === "listo" ? `<button type="button" onclick="marcarEntregadoDesdeComandas(${pedido.id})" style="width:100%;padding:10px;border:0;border-radius:8px;background:#15803d;color:white;font-weight:800;cursor:pointer;">📦 PEDIDO ENTREGADO</button>` : ""}
-                <button type="button" onclick="anularPedidoDesdeComandas(${pedido.id}, ${pedido.numero})" style="width:100%;padding:9px;border:0;border-radius:8px;background:#dc2626;color:white;font-weight:800;cursor:pointer;margin-top:8px;">ANULAR PEDIDO</button>
+                ${pedido.observacion ? `<div class="pedido-activo-observacion"><strong>Obs.:</strong> ${escapeHtml(pedido.observacion)}</div>` : ""}
+                ${pedido.estado === "listo" ? `<button type="button" class="pedido-activo-entregar" onclick="marcarEntregadoDesdeComandas(${pedido.id})">📦 PEDIDO ENTREGADO</button>` : ""}
+                <button type="button" class="pedido-activo-anular" onclick="anularPedidoDesdeComandas(${pedido.id}, ${pedido.numero})">ANULAR PEDIDO</button>
             </div>
         `;
     }).join("");
@@ -1030,6 +1067,7 @@ function mostrarHistorialPedidos() {
                                             ${Array.isArray(producto.modificaciones) && producto.modificaciones.length ? `<div style="font-size:12px;color:#b45309;margin-top:2px;">Modificaciones: ${producto.modificaciones.map(escaparTextoHistorial).join(", ")}</div>` : ""}
                                             ${Array.isArray(producto.adicionales) && producto.adicionales.length ? `<div style="font-size:12px;color:#166534;margin-top:2px;">Adicionales: ${producto.adicionales.map(escaparTextoHistorial).join(", ")}</div>` : ""}
                                             ${producto.guarnicion ? `<div style="font-size:12px;color:#555;margin-top:2px;">Guarnición: ${escaparTextoHistorial(producto.guarnicion)}</div>` : ""}
+                                            ${producto.tostado ? `<div style="font-size:12px;color:#555;margin-top:2px;">${escaparTextoHistorial(producto.tostado)}</div>` : ""}
                                             ${producto.preparacion ? `<div style="font-size:12px;color:#555;margin-top:2px;">Preparación: ${escaparTextoHistorial(producto.preparacion)}</div>` : ""}
                                         </div>
                                     `).join("") : `<div style="color:#777;">Sin productos registrados.</div>`}
