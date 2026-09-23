@@ -58,6 +58,28 @@ const productos = [
 // DESTINOS
 // =====================================================
 
+const clienteInput = document.getElementById("cliente");
+let clienteContador = null;
+
+if (clienteInput) {
+    clienteInput.maxLength = 20;
+    const clienteLabel = clienteInput.parentElement.querySelector("label");
+    if (clienteLabel) clienteLabel.textContent = "Nombre y apellido (máx. 20 caracteres)";
+
+    clienteContador = document.createElement("div");
+    clienteContador.id = "clienteContador";
+    clienteContador.style.cssText = "margin-top:4px;font-size:11px;color:#777;text-align:right;font-weight:800;";
+    clienteInput.parentElement.appendChild(clienteContador);
+
+    const actualizarContadorCliente = () => {
+        clienteContador.textContent = `${clienteInput.value.length}/20`;
+        clienteContador.style.color = clienteInput.value.length >= 20 ? "#c2410c" : "#777";
+    };
+
+    clienteInput.addEventListener("input", actualizarContadorCliente);
+    actualizarContadorCliente();
+}
+
 document.querySelectorAll(".destino, .destino-llevar").forEach(boton => {
     boton.addEventListener("click", () => seleccionarDestino(boton.dataset.destino, boton));
 });
@@ -77,6 +99,10 @@ function seleccionarDestino(destino, boton) {
     if (!esLlevar) {
         modoRetiro = "ahora";
         document.getElementById("cliente").value = "";
+        if (clienteContador) {
+            clienteContador.textContent = "0/20";
+            clienteContador.style.color = "#777";
+        }
         document.getElementById("programadoBox").classList.remove("visible");
         document.querySelectorAll(".retiro-opcion").forEach(b => b.classList.remove("activa"));
         document.querySelector('.retiro-opcion[data-modo="ahora"]').classList.add("activa");
@@ -537,6 +563,12 @@ document.getElementById("enviar").addEventListener("click", async () => {
     let cliente = "";
     if (destinoSeleccionado === "Para llevar") {
         cliente = document.getElementById("cliente").value.trim();
+
+        if (cliente.length > 20) {
+            mensaje.textContent = "⚠️ El nombre del cliente no puede superar 20 caracteres.";
+            document.getElementById("cliente").focus();
+            return;
+        }
 
         if (!cliente) {
             mensaje.textContent = "⚠️ Ingresá el nombre del cliente.";

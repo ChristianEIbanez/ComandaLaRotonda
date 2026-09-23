@@ -290,14 +290,18 @@ function calcularDemoraEmpanadas(pedidos) {
 function emitir(evento) {
     const mensaje = `data: ${JSON.stringify(evento)}\n\n`;
 
-    clientesCocina.forEach(cliente => {
+    clientesCocina = clientesCocina.filter(cliente => {
+        if (cliente.res.writableEnded || cliente.res.destroyed) return false;
+
         try {
             cliente.res.write(mensaje);
-        } catch (error) {
-            // La conexión se cerrará por el evento "close"
+            return true;
+        } catch {
+            return false;
         }
     });
 }
+
 // ======================================================
 // HEARTBEAT SSE
 // ======================================================
@@ -393,7 +397,7 @@ function prepararDatosPedido(body) {
 
     return {
         destino: body.destino,
-        cliente: body.cliente || "",
+        cliente: String(body.cliente || "").trim(),
         modo_retiro: body.modoRetiro || "ahora",
         retiro_at: retiroAt ? retiroAt.toISOString() : null,
         productos: Array.isArray(body.productos)
@@ -419,13 +423,22 @@ app.post("/api/pedidos", requiereAuth, async (req, res) => {
             });
         }
 
+        const cliente = String(body.cliente || "").trim();
+
         if (
             body.destino === "Para llevar" &&
-            !String(body.cliente || "").trim()
+            !cliente
         ) {
             return res.status(400).json({
                 ok: false,
                 mensaje: "Para llevar requiere el nombre del cliente."
+            });
+        }
+
+        if (cliente.length > 20) {
+            return res.status(400).json({
+                ok: false,
+                mensaje: "El nombre del cliente no puede superar 20 caracteres."
             });
         }
 
@@ -566,27 +579,18 @@ app.get("/api/cocina", requiereAuth, async (req, res) => {
     req.setTimeout(0);
     res.setTimeout(0);
 
-    // Le indica al navegador cuánto esperar antes de reconectar
-    // si la conexión SSE se corta.
     res.write("retry: 3000\n\n");
 
     const cliente = { res };
-
     clientesCocina.push(cliente);
 
     try {
         const pedidos = await obtenerPedidosActivos();
-
         res.write(
-            `data: ${JSON.stringify({
-                tipo: "inicio",
-                pedidos
-            })}\n\n`
+            `data: ${JSON.stringify({ tipo: "inicio", pedidos })}\n\n`
         );
-
     } catch (error) {
         console.error("Error cargando cocina:", error);
-
         res.write(
             `data: ${JSON.stringify({
                 tipo: "error",
@@ -596,14 +600,12 @@ app.get("/api/cocina", requiereAuth, async (req, res) => {
     }
 
     req.on("close", () => {
-        clientesCocina = clientesCocina.filter(
-            c => c !== cliente
-        );
+        clientesCocina = clientesCocina.filter(c => c !== cliente);
     });
 });
 
 // ======================================================
-// MENSAJE DIRECTO A COCINA
+// MENSAJE DIRECTO A COCINA (NO ES UN PEDIDO)
 // ======================================================
 
 app.post("/api/cocina/mensaje", requiereAuth, async (req, res) => {
