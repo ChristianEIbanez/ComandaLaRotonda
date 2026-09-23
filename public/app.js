@@ -740,6 +740,142 @@ function imprimirTicket(pedido) {
 
 document.querySelector('.categoria[data-categoria="empanadas"]').click();
 mostrarPedido();
+// =====================================================
+// MENSAJE DIRECTO A COCINA
+// =====================================================
+
+function abrirMensajeCocina() {
+    if (document.getElementById("modalMensajeCocina")) return;
+
+    const fondo = document.createElement("div");
+    fondo.id = "modalMensajeCocina";
+
+    fondo.style.cssText =
+        "position:fixed;inset:0;background:rgba(0,0,0,.65);" +
+        "backdrop-filter:blur(3px);display:flex;align-items:center;" +
+        "justify-content:center;padding:16px;z-index:9999;";
+
+    fondo.innerHTML = `
+        <div style="width:min(560px,100%);background:#fff;border-radius:16px;padding:22px;box-shadow:0 20px 70px rgba(0,0,0,.35);">
+
+            <div style="font-size:22px;font-weight:950;margin-bottom:5px;">
+                📢 MENSAJE A COCINA
+            </div>
+
+            <div style="font-size:13px;color:#666;margin-bottom:14px;">
+                El mensaje aparecerá en la pantalla de cocina durante unos segundos.
+                No crea un pedido ni modifica el historial.
+            </div>
+
+            <textarea
+                id="textoMensajeCocina"
+                maxlength="180"
+                placeholder="Ej.: SE TERMINÓ EL POLLO"
+                style="width:100%;min-height:120px;border:1px solid #ccc;border-radius:10px;padding:13px;font:700 18px Arial,sans-serif;resize:vertical;"
+            ></textarea>
+
+            <div style="display:flex;justify-content:flex-end;gap:9px;margin-top:14px;">
+
+                <button
+                    type="button"
+                    id="cancelarMensajeCocina"
+                    style="border:1px solid #ccc;border-radius:9px;padding:11px 16px;background:#f3f3f3;font-weight:900;cursor:pointer;"
+                >
+                    CANCELAR
+                </button>
+
+                <button
+                    type="button"
+                    id="enviarMensajeCocina"
+                    style="border:0;border-radius:9px;padding:11px 18px;background:#111;color:#fff;font-weight:900;cursor:pointer;"
+                >
+                    📢 ENVIAR A COCINA
+                </button>
+
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(fondo);
+
+    const cerrar = () => fondo.remove();
+
+    fondo.addEventListener("click", e => {
+        if (e.target === fondo) cerrar();
+    });
+
+    document.getElementById("cancelarMensajeCocina").onclick = cerrar;
+
+    const textarea = document.getElementById("textoMensajeCocina");
+    const boton = document.getElementById("enviarMensajeCocina");
+
+    textarea.focus();
+
+    const enviar = async () => {
+        const mensaje = textarea.value.trim();
+
+        if (!mensaje) {
+            textarea.focus();
+            return;
+        }
+
+        boton.disabled = true;
+        boton.textContent = "ENVIANDO…";
+
+        try {
+            const respuesta = await fetch("/api/cocina/mensaje", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ mensaje })
+            });
+
+            const resultado = await respuesta.json();
+
+            if (!respuesta.ok || !resultado.ok) {
+                throw new Error(
+                    resultado.mensaje || "No se pudo enviar el mensaje."
+                );
+            }
+
+            cerrar();
+
+        } catch (error) {
+            console.error(error);
+
+            alert(
+                error.message ||
+                "No se pudo conectar con la cocina."
+            );
+
+            boton.disabled = false;
+            boton.textContent = "📢 ENVIAR A COCINA";
+        }
+    };
+
+    boton.onclick = enviar;
+
+    textarea.addEventListener("keydown", e => {
+        if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+            enviar();
+        }
+
+        if (e.key === "Escape") {
+            cerrar();
+        }
+    });
+}
+
+const botonMensajeCocina =
+    document.getElementById("mensajeCocinaBtn");
+
+if (botonMensajeCocina) {
+    botonMensajeCocina.addEventListener(
+        "click",
+        abrirMensajeCocina
+    );
+}
 
 // Cerrar sesión desde Comandas
 const botonCerrarSesion = document.getElementById("cerrarSesion");

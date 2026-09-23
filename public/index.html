@@ -92,7 +92,42 @@ body{background:linear-gradient(135deg,#f7f7f7 0%,#f0f0f0 100%);color:#161616}
 #pedidosHoyLista>div[style*="border:1px"]{border-radius:13px!important;border-color:#e5e5e5!important;box-shadow:0 2px 9px rgba(0,0,0,.035)}
 #modalFondo{background:rgba(10,10,10,.68);backdrop-filter:blur(3px)}.modal{border-radius:18px;box-shadow:0 18px 60px rgba(0,0,0,.25)}.guarnicion{background:#f0f0f0}.guarnicion.seleccionada{background:#111}
 @media(max-width:1150px){.app-header{grid-template-columns:1fr auto}.fecha-hora-header{grid-column:1/-1;grid-row:2;justify-content:flex-start}.acciones-header{grid-column:2;grid-row:1}.contenedor{grid-template-columns:1fr}.pedido-panel{position:static}.productos{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:700px){.app-header{padding:9px 12px;grid-template-columns:1fr auto;gap:8px}.logo-header{width:50px;height:50px}.marca-nombre{font-size:16px}.marca-subtitulo{font-size:9px;letter-spacing:3px}.fecha-hora-header{font-size:12px;gap:12px}.fecha-header{font-size:12px}.hora-header{font-size:17px;padding-left:12px}.btn-header{padding:9px 10px;font-size:11px}.btn-cocina{font-size:0}.btn-cocina:first-letter{font-size:16px}.contenedor{padding:10px}.panel{padding:14px;border-radius:15px}.productos{grid-template-columns:1fr 1fr}.producto{min-height:82px;font-size:15px}.categoria{padding:9px 11px;font-size:13px}.destinos-principales{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){
+  html,body{width:100%;max-width:100%;overflow-x:hidden}
+  .app-header{
+    position:sticky;top:0;z-index:30;
+    min-height:64px;height:64px;
+    padding:7px 10px;
+    display:flex;align-items:center;justify-content:space-between;
+    gap:8px;
+  }
+  .marca-header{gap:8px;min-width:0;flex:1}
+  .logo-header{width:46px;height:46px;flex:0 0 46px}
+  .marca-nombre{font-size:15px;line-height:1.05;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .marca-subtitulo{font-size:8px;letter-spacing:3px;margin-top:2px}
+  .fecha-hora-header{display:flex;align-items:center;gap:7px;flex:0 0 auto}
+  .fecha-header{display:none}
+  .hora-header{font-size:15px;padding-left:0;border-left:0;white-space:nowrap}
+  .hora-icono{font-size:16px}
+  .acciones-header{display:flex;gap:5px;flex:0 0 auto}
+  .btn-header{padding:8px 9px;font-size:10px;border-radius:8px;line-height:1}
+  .btn-cocina{font-size:0;width:34px;height:32px;padding:0;display:grid;place-items:center}
+  .btn-cocina::before{content:'🍳';font-size:15px}
+  .btn-sesion{white-space:nowrap}
+  .contenedor{display:block;width:100%;max-width:none;padding:8px}
+  .panel{width:100%;padding:12px;border-radius:13px}
+  .seccion-titulo{font-size:19px;margin-bottom:11px}
+  .destinos-principales{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .destino,.destino-llevar{min-height:44px;padding:10px 7px;font-size:15px}
+  #botonMasMesas{min-height:38px;padding:8px}
+  .categorias{margin-bottom:10px;gap:6px}
+  .categoria{padding:9px 10px;font-size:12px}
+  .productos{grid-template-columns:1fr 1fr;gap:8px}
+  .producto{min-height:78px;padding:11px;font-size:14px}
+  .pedido-panel{margin-top:10px;top:auto}
+  .lista-pedido{max-height:none}
+  #pedidosHoyBox{margin-top:10px!important}
+}
 </style>
 
 <style>
@@ -114,6 +149,14 @@ body{background:linear-gradient(135deg,#f7f7f7 0%,#f0f0f0 100%);color:#161616}
     </div>
     <div class="acciones-header">
         <button id="irCocina" class="btn-header btn-cocina" type="button" onclick="window.open('/cocina.html', '_blank')">🍳 COCINA</button>
+        <button
+    id="mensajeCocinaBtn"
+    class="btn-header"
+    type="button"
+    style="background:#5b2600;color:#fff;border:1px solid #8a470e;"
+>
+    📢 COCINA
+</button>
         <button id="cerrarSesion" class="btn-header btn-sesion" type="button">Cerrar sesión</button>
     </div>
 </header>

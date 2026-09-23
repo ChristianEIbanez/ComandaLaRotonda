@@ -298,6 +298,26 @@ function emitir(evento) {
         }
     });
 }
+// ======================================================
+// HEARTBEAT SSE
+// ======================================================
+
+// Mantiene viva la conexión con Cocina y evita que Render
+// o un proxy cierre la conexión por inactividad.
+setInterval(() => {
+    clientesCocina = clientesCocina.filter(cliente => {
+        if (cliente.res.writableEnded || cliente.res.destroyed) {
+            return false;
+        }
+
+        try {
+            cliente.res.write(": heartbeat\n\n");
+            return true;
+        } catch {
+            return false;
+        }
+    });
+}, 20000);
 
 // ======================================================
 // FECHA OPERATIVA (ARGENTINA)
@@ -536,11 +556,19 @@ app.get("/api/pedidos/historial", requiereAuth, async (req, res) => {
 // ======================================================
 
 app.get("/api/cocina", requiereAuth, async (req, res) => {
-    res.setHeader("Content-Type", "text/event-stream");
-    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
+    res.setHeader("Cache-Control", "no-cache, no-transform");
     res.setHeader("Connection", "keep-alive");
+    res.setHeader("X-Accel-Buffering", "no");
 
     res.flushHeaders?.();
+
+    req.setTimeout(0);
+    res.setTimeout(0);
+
+    // Le indica al navegador cuánto esperar antes de reconectar
+    // si la conexión SSE se corta.
+    res.write("retry: 3000\n\n");
 
     const cliente = { res };
 
@@ -572,6 +600,54 @@ app.get("/api/cocina", requiereAuth, async (req, res) => {
             c => c !== cliente
         );
     });
+});
+
+// ======================================================
+// MENSAJE DIRECTO A COCINA
+// ======================================================
+
+app.post("/api/cocina/mensaje", requiereAuth, async (req, res) => {
+    try {
+        const mensaje = String(req.body?.mensaje || "")
+            .replace(/\s+/g, " ")
+            .trim();
+
+        if (!mensaje) {
+            return res.status(400).json({
+                ok: false,
+                mensaje: "El mensaje no puede estar vacío."
+            });
+        }
+
+        if (mensaje.length > 180) {
+            return res.status(400).json({
+                ok: false,
+                mensaje: "El mensaje no puede superar 180 caracteres."
+            });
+        }
+
+        const evento = {
+            tipo: "mensaje",
+            id: crypto.randomUUID(),
+            mensaje,
+            creadoAt: new Date().toISOString()
+        };
+
+        emitir(evento);
+
+        res.json({
+            ok: true,
+            evento
+        });
+
+    } catch (error) {
+        console.error("Error enviando mensaje a cocina:", error);
+
+        res.status(500).json({
+            ok: false,
+            mensaje: "No se pudo enviar el mensaje a cocina."
+        });
+    }
 });
 
 // ======================================================

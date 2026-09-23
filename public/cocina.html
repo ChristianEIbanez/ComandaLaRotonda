@@ -3,663 +3,126 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cocina - Comandas</title>
+<title>Cocina · Comanda 2.0</title>
 <style>
+:root{
+  --bg:#07090b;--panel:#0f1317;--panel2:#14191e;--line:#293139;--text:#f5f7f8;--muted:#8d98a2;
+  --orange:#ff7a00;--yellow:#f5c542;--blue:#238bea;--green:#20b15a;--red:#ef4444;--purple:#9b87f5;
+}
 *{box-sizing:border-box}
-html,body{height:100%;overflow:hidden}
-body{margin:0;background:#0d0d0d;color:#fff;font-family:Arial,Helvetica,sans-serif}
-header{height:68px;padding:10px 20px;background:#050505;border-bottom:1px solid #2b2b2b;display:flex;justify-content:space-between;align-items:center;gap:18px;position:relative;z-index:10}
-.titulo{font-size:28px;font-weight:900;letter-spacing:.3px}.reloj{font-size:20px;font-weight:800;white-space:nowrap}.btn-logout{border:1px solid #555;background:#151515;color:#fff;border-radius:7px;padding:8px 12px;font-size:13px;font-weight:900;cursor:pointer}.btn-logout:hover{background:#222}.header-derecha{display:flex;align-items:center;gap:12px}
-main{height:calc(100vh - 68px);padding:14px 16px;max-width:2200px;margin:auto;display:grid;grid-template-columns:2fr 2fr 1fr;gap:14px;min-height:0}
-.seccion{min-width:0;min-height:0;background:#111;border:1px solid #282828;border-radius:12px;padding:11px;display:flex;flex-direction:column;overflow:hidden}
-.seccion h2{flex:0 0 auto;margin:0 0 9px;padding:0 4px;font-size:20px;font-weight:900;line-height:1.1;white-space:nowrap}.contador{font-size:14px;color:#999;vertical-align:middle}
-.grid{flex:1;min-height:0;min-width:0;display:grid;grid-template-columns:1fr;grid-auto-rows:max-content;align-content:start;align-items:start;gap:8px;overflow-x:hidden;overflow-y:auto;padding-right:2px}
-/*
-   SISTEMA DE ALTURA DEFINITIVO:
-   - Cada comanda conserva como mínimo todo el alto que necesita su contenido.
-   - Si sobra espacio, las filas se estiran para aprovechar la pantalla.
-   - Si no alcanza, el grid crece y aparece scroll; nunca se recorta una comanda.
-   - No dependemos de una cantidad fija de pedidos ni del zoom del navegador.
-*/
-.pedido{min-height:0;background:#181818;border:2px solid #383838;border-radius:10px;padding:11px;box-shadow:0 4px 14px rgba(0,0,0,.22);display:flex;flex-direction:column;overflow:visible}
-.pedido.ahora{border-color:#fff}.pedido.proximamente{opacity:.68}.pedido.preparar{border-width:3px}.pedido.urgente{border-width:4px}.pedido.demorado{border-width:4px}.pedido.nueva{animation:nuevaComanda 1s ease-in-out 5;box-shadow:0 0 0 2px #fff}
-@keyframes nuevaComanda{0%,100%{transform:scale(1)}50%{transform:scale(1.012)}}
-.cabecera{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:118px}.numero{font-size:62px;line-height:.95;font-weight:900;letter-spacing:-1px}.estado{font-size:19px;font-weight:900;border:2px solid #777;border-radius:8px;padding:10px 13px;text-align:center;white-space:nowrap}.contexto{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:7px;padding:14px 0 14px;border-bottom:1px solid #303030;min-height:82px}.destino,.cliente{font-size:28px;font-weight:900}.cliente{font-size:24px}
-.contexto{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px;padding-bottom:7px;border-bottom:1px solid #303030}.destino,.cliente{font-size:15px;font-weight:900}.cliente-secundario{font-size:16px;font-weight:900;margin-top:5px}.horario{font-size:14px;font-weight:900;margin:7px 0 0}.meta{font-size:11px;color:#aaa;margin:4px 0 5px}.tiempo-pedido{font-size:13px;color:#aaa;font-weight:800;margin:6px 0 2px}
-.productos{margin-top:5px;min-height:0;overflow:visible}.producto{padding:8px 0 7px;border-top:1px solid #3a3a3a}.producto:last-child{border-bottom:1px solid #333}.producto strong{display:block;font-size:25px;line-height:1.1;font-weight:900}.cantidad{font-size:32px;font-weight:900;margin-right:5px}.nombre-producto{font-size:25px;font-weight:900}.detalle{font-size:15px;color:#eee;margin-top:4px;line-height:1.25;font-weight:700}
-.observacion{margin-top:8px;padding:9px;border-radius:7px;background:#292929;border-left:4px solid #fff;font-size:14px;line-height:1.25;font-weight:900}.pedido button{width:100%;border:0;border-radius:7px;padding:12px;margin-top:auto;font-size:14px;font-weight:900;cursor:pointer;flex:0 0 auto}.btn-listo,.btn-entregado,.btn-marchar{background:#fff;color:#111}.en-marcha{border-left:5px solid #5aa9ff}.listo{border-left:5px solid #63c174}
-.vacio{color:#666;font-size:14px;padding:10px 4px}
-.grid:has(.pedido:nth-child(2)) .cabecera{min-height:86px}.grid:has(.pedido:nth-child(2)) .numero{font-size:48px}.grid:has(.pedido:nth-child(2)) .estado{font-size:16px;padding:8px 10px}.grid:has(.pedido:nth-child(2)) .contexto{min-height:62px;padding:10px 0}.grid:has(.pedido:nth-child(2)) .destino,.grid:has(.pedido:nth-child(2)) .cliente{font-size:21px}.grid:has(.pedido:nth-child(3)) .cabecera{min-height:70px}.grid:has(.pedido:nth-child(3)) .numero{font-size:40px}.grid:has(.pedido:nth-child(3)) .estado{font-size:13px;padding:7px 9px}.grid:has(.pedido:nth-child(3)) .contexto{min-height:52px;padding:7px 0}.grid:has(.pedido:nth-child(3)) .destino,.grid:has(.pedido:nth-child(3)) .cliente{font-size:18px}@media(max-width:1100px){main{grid-template-columns:1fr;overflow:auto;height:auto;min-height:calc(100vh - 68px)}html,body{overflow:auto}.seccion{min-height:500px}.grid{overflow-y:auto}.titulo{font-size:22px}}
-@media(max-width:650px){header{height:auto;padding:10px 12px}.header-derecha{gap:7px}.btn-logout{padding:7px 9px;font-size:11px}.reloj{font-size:17px}main{padding:10px}.seccion{min-height:420px}.pedido{padding:10px}.cabecera{min-height:74px}.numero{font-size:44px}.estado{font-size:14px;padding:7px 9px}.contexto{min-height:58px;padding:9px 0}.destino,.cliente{font-size:21px}.cliente{font-size:18px}.producto strong{font-size:20px}.cantidad{font-size:26px}.nombre-producto{font-size:20px}}
-/*
-   MEJORA VISUAL:
-   - Encabezado en una sola línea: #pedido | mesa/destino | estado.
-   - Productos más grandes y legibles.
-   - Las tarjetas ocupan solo el alto de su contenido.
-   - El grid nunca recorta productos/detalles; si faltan espacio y la lista crece, aparece scroll.
-*/
-
-/* AJUSTE FINAL: ENCABEZADO OPTIMIZADO PARA TV 32" 1920x1080 */
-.cabecera{
-    min-height:0 !important;
-    display:grid !important;
-    grid-template-columns:minmax(0,1fr) auto;
-    align-items:center;
-    gap:10px;
-    padding:0 !important;
-    margin:0 0 5px !important;
+html,body{height:100%;margin:0;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif}
+button{font:inherit}
+body{display:flex;flex-direction:column}
+.header{
+  flex:0 0 78px;display:grid;grid-template-columns:300px 1fr auto;align-items:center;gap:18px;
+  padding:10px 18px;background:linear-gradient(180deg,#11161a,#090c0f);border-bottom:1px solid #283038;box-shadow:0 4px 20px rgba(0,0,0,.35);z-index:20
 }
-.identificacion{
-    display:grid;
-    grid-template-columns:auto 2px minmax(0,1fr);
-    align-items:center;
-    gap:9px;
-    min-width:0;
-}
-.numero{
-    font-size:46px !important;
-    line-height:.92;
-    white-space:nowrap;
-    letter-spacing:-1px;
-}
-.separador-identificacion{
-    width:2px;
-    height:38px;
-    background:#555;
-}
-.destino-principal{
-    min-width:0;
-    display:grid;
-    grid-template-columns:max-content minmax(0,1fr);
-    align-items:center;
-    column-gap:8px;
-    font-size:38px !important;
-    line-height:1;
-    font-weight:900;
-}
-.destino-text{
-    min-width:0;
-    white-space:nowrap;
-}
-.cliente-inline{
-    min-width:0;
-    max-width:100%;
-    font-size:22px;
-    font-weight:900;
-    line-height:1.02;
-    white-space:normal;
-    overflow-wrap:break-word;
-    word-break:normal;
-}
-.estado{
-    font-size:16px !important;
-    padding:8px 10px !important;
-    line-height:1;
-    white-space:nowrap;
-    flex:0 0 auto;
-}
-.cliente-secundario{display:none !important}
-
-/* Mantener acumulación: cada tarjeta conserva todo su contenido y el grid hace scroll. */
-.grid{
-    grid-template-columns:1fr !important;
-    grid-auto-rows:max-content !important;
-    align-content:start !important;
-    align-items:start !important;
-    gap:8px !important;
-}
-.pedido{
-    height:max-content !important;
-    min-height:0 !important;
-    padding:8px !important;
-}
-.producto strong{font-size:27px !important;line-height:1.08}
-.cantidad{font-size:34px !important}
-.nombre-producto{font-size:27px !important}
-.detalle{font-size:16px !important;line-height:1.25}
-
-/* En anchos de tarjeta menores, reducimos solo el encabezado, no la comida. */
-@media (max-width: 1500px){
-    .numero{font-size:42px !important}
-    .destino-principal{font-size:34px !important}
-    .cliente-inline{font-size:20px}
-    .separador-identificacion{height:34px}
-}
-@media (max-width: 1100px){
-    main{grid-template-columns:1fr;overflow:auto;height:auto;min-height:calc(100vh - 68px)}
-    html,body{overflow:auto}
-    .seccion{min-height:500px}
-    .grid{overflow-y:auto}
-    .titulo{font-size:22px}
-}
-@media (max-width: 650px){
-    header{height:auto;padding:10px 12px}
-    .header-derecha{gap:7px}
-    .btn-logout{padding:7px 9px;font-size:11px}
-    .reloj{font-size:17px}
-    main{padding:10px}
-    .seccion{min-height:420px}
-    .pedido{padding:10px !important}
-    .numero{font-size:36px !important}
-    .destino-principal{font-size:27px !important;grid-template-columns:1fr}
-    .cliente-inline{font-size:18px}
-    .estado{font-size:14px !important;padding:7px 9px !important}
-    .producto strong{font-size:20px !important}
-    .cantidad{font-size:26px !important}
-    .nombre-producto{font-size:20px !important}
-}
-</style>
-
-<style>
-:root{--orange:#ff7a00;--yellow:#ffd84d;--blue:#1386df;--green:#16a34a}
-body{background:radial-gradient(circle at top,#191d21 0%,#0a0b0c 60%);font-family:Arial,Helvetica,sans-serif}
-header{height:88px;padding:9px 24px;background:linear-gradient(110deg,#080909,#15191c);border-bottom:1px solid #333;box-shadow:0 5px 22px rgba(0,0,0,.3);display:grid;grid-template-columns:minmax(330px,1fr) auto minmax(300px,1fr);gap:24px}
-.marca-cocina{display:flex;align-items:center;gap:13px}.logo-cocina{width:68px;height:68px;border-radius:50%;object-fit:cover;border:2px solid var(--orange);box-shadow:0 0 0 3px rgba(255,122,0,.12)}
-.titulo{font-size:25px;letter-spacing:.5px}.subtitulo-cocina{font-size:14px;letter-spacing:7px;font-weight:900;color:var(--orange);margin-top:2px}
-.fecha-hora-cocina{display:flex;align-items:center;gap:25px;white-space:nowrap}.fecha-cocina{display:flex;align-items:center;gap:8px;font-size:15px}.fecha-cocina span,.reloj-icono{color:var(--orange);font-size:21px}.reloj{font-size:23px;border-left:1px solid #555;padding-left:25px}
-.header-derecha{justify-content:flex-end;gap:10px}.estado-online{border:1px solid #315a3c;background:#102017;color:#7fe09a;border-radius:10px;padding:10px 13px;font-size:13px;font-weight:900}.btn-logout{border-color:#555;border-radius:10px;padding:10px 14px;font-size:12px}.btn-logout:hover{background:#252525}
-main{height:calc(100vh - 88px);padding:14px 16px 18px;grid-template-columns:2fr 2fr 1fr;gap:14px;max-width:2300px}
-.seccion{background:linear-gradient(160deg,#151718,#0f1112);border:1px solid #34383a;border-radius:16px;padding:10px;box-shadow:0 10px 30px rgba(0,0,0,.25);position:relative}.seccion h2{font-size:20px;padding:9px 10px;margin:0 0 9px;border-radius:11px;letter-spacing:.2px}.seccion:nth-child(1) h2{background:linear-gradient(90deg,var(--yellow),#ffe991);color:#111}.seccion:nth-child(2) h2{background:linear-gradient(90deg,var(--blue),#36a4f3);color:#fff}.seccion:nth-child(3) h2{background:linear-gradient(90deg,var(--green),#28b75b);color:#fff}.contador{font-size:17px;color:inherit;margin-left:5px}
-.grid{gap:9px;padding:1px 3px 3px 1px}.pedido{background:linear-gradient(145deg,#fff,#f4f6f7);color:#111;border:2px solid #ddd;border-radius:14px;padding:10px;box-shadow:0 5px 18px rgba(0,0,0,.16)}.pedido.preparar{border-color:#ffc928}.pedido.urgente{border-color:#ff3b30;box-shadow:0 0 0 2px rgba(255,59,48,.13),0 5px 20px rgba(0,0,0,.18)}.pedido.demorado{border-color:#e11d48;box-shadow:0 0 0 2px rgba(225,29,72,.16),0 5px 20px rgba(0,0,0,.2)}.pedido.en-marcha{border:2px solid #8bc9f5;border-left:5px solid var(--blue)}.pedido.listo{border:2px solid #82d79b;border-left:5px solid var(--green)}
-.cabecera{padding:2px 2px 7px!important;margin-bottom:3px!important}.numero{font-size:45px!important;color:#111!important}.destino-principal{font-size:25px!important;color:#111!important}.cliente-inline{font-size:16px;color:#333}.separador-identificacion{background:#c9c9c9}.estado{border:0!important;border-radius:9px!important;font-size:12px!important;padding:8px 10px!important;background:#ececec;color:#222}.pedido.urgente .estado,.pedido.demorado .estado{background:#ffe1df;color:#b91c1c}.pedido.preparar .estado{background:#fff0a8}.en-marcha .estado{background:#dceeff;color:#0969b4}.listo .estado{background:#dcfce7;color:#087b32}
-.tiempo-pedido{font-size:13px!important;color:#555!important;font-weight:900!important;background:#f0f2f3;border-radius:7px;padding:5px 7px;display:inline-block}.horario{font-size:12px!important;color:#555!important;background:#fff7ed;border-radius:7px;padding:5px 7px}.meta{font-size:11px!important;color:#666!important}.producto{padding:7px 2px!important;border-top:1px solid #e1e5e8!important}.producto strong{font-size:20px!important;line-height:1.1!important}.cantidad{font-size:25px!important;color:#111}.nombre-producto{font-size:20px!important;color:#111}.detalle{font-size:13px!important;color:#4b5563!important;background:#f2f5f7;border-radius:7px;padding:5px 7px;margin-top:5px}.observacion{background:#fff4e8;color:#4b2b10;border-left:4px solid var(--orange);font-size:12px;padding:8px}.pedido button{margin-top:8px;border-radius:10px;padding:12px;font-size:15px;box-shadow:0 3px 8px rgba(0,0,0,.12)}.btn-marchar{background:linear-gradient(135deg,#ff7800,#ff9a2e)!important;color:#fff!important}.btn-listo{background:linear-gradient(135deg,#087fd6,#1d9cf0)!important;color:#fff!important}.btn-entregado{background:linear-gradient(135deg,#159947,#23b95e)!important;color:#fff!important}
-.vacio{color:#858b8f;text-align:center;font-weight:700;padding:18px}.seccion:nth-child(3)::after{content:'Buen equipo\A Grandes momentos';white-space:pre;text-align:center;display:block;color:#4d5356;font-family:cursive;font-size:25px;line-height:1.15;margin:20px 10px 10px;opacity:.8}
-@media(max-width:1300px){header{grid-template-columns:1fr auto}.fecha-hora-cocina{grid-column:1/-1;grid-row:2;justify-content:flex-start}header{height:118px}main{height:calc(100vh - 118px)}}
-@media(max-width:1100px){main{height:auto;grid-template-columns:1fr;overflow:auto}.seccion{min-height:500px}html,body{overflow:auto}}
-@media(max-width:650px){header{height:auto;padding:9px 12px;grid-template-columns:1fr auto;gap:8px}.logo-cocina{width:52px;height:52px}.titulo{font-size:16px}.subtitulo-cocina{font-size:10px;letter-spacing:4px}.fecha-hora-cocina{grid-column:1/-1;grid-row:2;gap:12px}.fecha-cocina{font-size:11px}.reloj{font-size:17px;padding-left:12px}.estado-online{display:none}.btn-logout{padding:8px;font-size:10px}main{padding:10px}.seccion{min-height:420px}.numero{font-size:36px!important}.destino-principal{font-size:21px!important}.producto strong,.nombre-producto{font-size:18px!important}.cantidad{font-size:23px!important}}
+.brand{display:flex;align-items:center;gap:11px;min-width:0}.brand img{width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid var(--orange)}
+.brand-name{font-weight:950;font-size:19px;white-space:nowrap}.brand-sub{font-size:11px;font-weight:950;letter-spacing:4px;color:var(--orange);margin-top:2px}
+.metrics{display:grid;grid-template-columns:repeat(5,minmax(88px,1fr));gap:8px;min-width:0}.metric{background:#11171c;border:1px solid #29323a;border-radius:9px;padding:7px 11px;min-width:0}.metric b{display:block;font-size:21px;line-height:1.05}.metric span{display:block;color:var(--muted);font-size:10px;font-weight:900;text-transform:uppercase;white-space:nowrap;margin-top:3px}.metric.warn b{color:var(--red)}.metric.live b{color:var(--green)}
+.header-right{display:flex;align-items:center;gap:10px}.clock{text-align:right;white-space:nowrap}.clock-time{font-size:22px;font-weight:950}.clock-date{font-size:10px;color:var(--muted);font-weight:800;text-transform:capitalize}.online{display:flex;align-items:center;gap:6px;border:1px solid #245d3a;background:#0e2417;color:#72e39a;border-radius:8px;padding:8px 10px;font-size:11px;font-weight:950;white-space:nowrap}.online i{width:7px;height:7px;border-radius:50%;background:#35d26f;box-shadow:0 0 9px #35d26f}
+.toolbar{flex:0 0 48px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 18px;background:#0b0f12;border-bottom:1px solid #20272d}.toolbar-left,.toolbar-right{display:flex;align-items:center;gap:7px}.filter{border:1px solid #303941;background:#151a1f;color:#cbd2d7;border-radius:7px;padding:7px 10px;font-size:11px;font-weight:900;cursor:pointer}.filter.active{background:#e9edf0;color:#111;border-color:#e9edf0}.sound{border:1px solid #39434b;background:#151a1f;color:#fff;border-radius:7px;padding:7px 11px;font-size:11px;font-weight:900;cursor:pointer}.sound.active{background:#173822;border-color:#2e7d4b;color:#8af0ad}.legend{font-size:10px;color:#7f8a93;font-weight:800}
+.main{flex:1;min-height:0;padding:10px 12px 12px;display:flex;flex-direction:column;gap:9px}
+.notice{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(5px);align-items:center;justify-content:center;padding:40px;z-index:1000}.notice.show{display:flex}.notice-box{width:min(1100px,94vw);border:2px solid #ff8a1c;background:linear-gradient(180deg,#251609,#100b06);border-radius:18px;box-shadow:0 25px 90px rgba(0,0,0,.7);padding:34px 44px;text-align:center}.notice-icon{font-size:54px;line-height:1}.notice-label{font-size:15px;color:#ffad66;font-weight:950;letter-spacing:3px;margin-top:10px}.notice-text{font-size:clamp(34px,5vw,72px);font-weight:950;letter-spacing:.5px;line-height:1.05;margin-top:18px}.notice-age{font-size:12px;color:#858f97;font-weight:800;margin-top:20px}
+.wall{flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(285px,1fr));grid-auto-rows:max-content;align-content:start;align-items:start;gap:9px;padding:1px 2px 8px;scrollbar-width:thin;scrollbar-color:#3c464e transparent}
+.ticket{background:linear-gradient(180deg,#f8fafb,#edf1f3);color:#111;border:2px solid #d3d9de;border-radius:11px;min-width:0;min-height:295px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 5px 18px rgba(0,0,0,.24);position:relative}.ticket.new{animation:newTicket .8s ease-in-out 4}.ticket.pending{border-top:5px solid var(--yellow)}.ticket.cooking{border-top:5px solid var(--blue)}.ticket.ready{border-top:5px solid var(--green)}.ticket.urgent{border-top-color:var(--red);box-shadow:0 0 0 1px rgba(239,68,68,.25),0 6px 20px rgba(0,0,0,.28)}.ticket.delayed{border-top-color:#b91c1c;box-shadow:0 0 0 2px rgba(185,28,28,.25),0 6px 24px rgba(0,0,0,.3)}
+@keyframes newTicket{0%,100%{transform:scale(1)}50%{transform:scale(1.012)}}
+.ticket-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:10px 11px 8px;border-bottom:1px solid #dbe0e4}.ticket-id{font-size:38px;line-height:.9;font-weight:950;letter-spacing:-1.5px}.status{font-size:10px;font-weight:950;padding:6px 8px;border-radius:6px;background:#e5e9ec;white-space:nowrap}.pending .status{background:#fff1ad}.cooking .status{background:#dceeff;color:#075f9f}.ready .status{background:#d9f7e5;color:#0c7a3d}.urgent .status,.delayed .status{background:#ffe0df;color:#b42318}
+.ticket-meta{padding:7px 11px 8px;border-bottom:1px solid #e0e4e7}.destination{font-size:19px;font-weight:950;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.customer{font-size:12px;font-weight:850;color:#4b5560;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.time-row{display:flex;align-items:center;justify-content:space-between;gap:7px;margin-top:7px}.age{font-size:12px;font-weight:950;color:#4b5560}.age.hot{color:#c21f1f}.scheduled{font-size:10px;font-weight:950;background:#fff2e4;color:#9a4b00;border-radius:5px;padding:4px 6px;white-space:nowrap}
+.items{padding:4px 11px 2px;flex:1}.item{padding:7px 0;border-bottom:1px solid #e1e5e8}.item:last-child{border-bottom:0}.item-main{display:grid;grid-template-columns:32px minmax(0,1fr);gap:5px;align-items:start}.qty{font-size:22px;font-weight:950;text-align:left}.item-name{font-size:16px;font-weight:950;line-height:1.1}.details{font-size:11px;color:#4b5560;font-weight:800;line-height:1.25;margin:3px 0 0 37px}.note{margin:6px 10px 8px;padding:7px 8px;border-left:4px solid var(--orange);background:#fff0df;border-radius:5px;color:#63310c;font-size:11px;font-weight:900;line-height:1.25}.ticket-actions{padding:8px 10px;background:#e7ebee;border-top:1px solid #d3d9de}.action{width:100%;border:0;border-radius:7px;padding:11px 10px;color:#fff;font-size:12px;font-weight:950;cursor:pointer;transition:.12s}.action:hover{filter:brightness(1.05)}.action:disabled{opacity:.55;cursor:wait}.action-start{background:linear-gradient(135deg,#ef8b18,#ff7a00)}.action-ready{background:linear-gradient(135deg,#087fd6,#1b9cf0)}.action-deliver{background:linear-gradient(135deg,#138c45,#20b15a)}
+.empty{grid-column:1/-1;border:1px dashed #303940;border-radius:10px;padding:30px;text-align:center;color:#69747d;font-size:13px;font-weight:850}
+.footer{flex:0 0 25px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;color:#59636b;font-size:9px;font-weight:800;background:#080a0c;border-top:1px solid #1e252a}.footer strong{color:#7d878f}
+@media(max-width:1250px){.header{grid-template-columns:260px 1fr}.header-right{grid-column:2;grid-row:1;justify-content:flex-end}.metrics{grid-column:1/-1;grid-row:2}.header{height:124px;flex-basis:124px}.toolbar{flex-basis:48px}}
+@media(max-width:800px){html,body{overflow:auto}.header{height:auto;flex:none;grid-template-columns:1fr auto;padding:9px 11px}.metrics{grid-column:1/-1;grid-row:2;overflow:auto;grid-template-columns:repeat(5,100px)}.header-right{grid-column:2;grid-row:1}.online{display:none}.brand img{width:44px;height:44px}.brand-name{font-size:15px}.brand-sub{font-size:9px}.clock-time{font-size:18px}.toolbar{overflow:auto}.main{min-height:calc(100vh - 160px)}.wall{grid-template-columns:repeat(auto-fit,minmax(270px,1fr))}.notice-text{font-size:18px}}
 </style>
 </head>
 <body>
-<header>
-  <div class="marca-cocina">
-    <img src="logo.jpg" alt="Drugstore La Rotonda" class="logo-cocina">
-    <div>
-      <div class="titulo">DRUGSTORE LA ROTONDA</div>
-      <div class="subtitulo-cocina">COCINA</div>
-    </div>
+<header class="header">
+  <div class="brand"><img src="logo.jpg" alt="La Rotonda"><div><div class="brand-name">DRUGSTORE LA ROTONDA</div><div class="brand-sub">COCINA · KDS</div></div></div>
+  <div class="metrics">
+    <div class="metric"><b id="mTotal">0</b><span>Pedidos en cocina</span></div>
+    <div class="metric"><b id="mPending">0</b><span>Sin iniciar</span></div>
+    <div class="metric"><b id="mCooking">0</b><span>En marcha</span></div>
+    <div class="metric live"><b id="mReady">0</b><span>Listos</span></div>
+    <div class="metric warn"><b id="mDelayed">0</b><span>Demorados</span></div>
   </div>
-  <div class="fecha-hora-cocina">
-    <div class="fecha-cocina"><span>▣</span><strong id="fechaCocina"></strong></div>
-    <div class="reloj"><span class="reloj-icono">◷</span> <span id="reloj">--:--:--</span></div>
-  </div>
-  <div class="header-derecha"><div class="estado-online">● EN LÍNEA</div><button class="btn-logout" type="button" onclick="cerrarSesion()">CERRAR SESIÓN</button></div>
+  <div class="header-right"><div class="online"><i></i> EN LÍNEA</div><div class="clock"><div class="clock-time" id="clock">--:--</div><div class="clock-date" id="date">--</div></div></div>
 </header>
-<main>
-<section class="seccion">
-<h2>🟡 POR PREPARAR <span id="contadorPendientes" class="contador"></span></h2>
-<div id="pendientes" class="grid cantidad-1"></div>
-<div id="vacioPendientes" class="vacio">No hay pedidos pendientes.</div>
-</section>
-<section class="seccion">
-<h2>🔵 EN MARCHA <span id="contadorEnMarcha" class="contador"></span></h2>
-<div id="enMarcha" class="grid cantidad-1"></div>
-<div id="vacioEnMarcha" class="vacio">No hay pedidos en preparación.</div>
-</section>
-<section class="seccion">
-<h2>🟢 LISTOS <span id="contadorListos" class="contador"></span></h2>
-<div id="listos" class="grid cantidad-1"></div>
-<div id="vacioListos" class="vacio">No hay pedidos esperando retiro.</div>
-</section>
+<div class="toolbar">
+  <div class="toolbar-left">
+    <button class="filter active" data-filter="todos">TODOS</button><button class="filter" data-filter="pendiente">SIN INICIAR</button><button class="filter" data-filter="en_marcha">EN MARCHA</button><button class="filter" data-filter="listo">LISTOS</button>
+  </div>
+  <div class="toolbar-right"><span class="legend">Orden automático por prioridad y antigüedad</span><button id="soundBtn" class="sound">🔇 ACTIVAR SONIDO</button></div>
+</div>
+<main class="main">
+  <div id="notice" class="notice"><div class="notice-box"><div class="notice-icon">📢</div><div class="notice-label">MENSAJE DE COMANDAS</div><div id="noticeText" class="notice-text"></div><div id="noticeAge" class="notice-age"></div></div></div>
+  <section id="wall" class="wall"></section>
 </main>
+<footer class="footer"><span>COMANDA 2.0 · <strong>KDS LA ROTONDA</strong></span><span id="connectionText">Tiempo real · SSE</span></footer>
 <script>
-
+const PREP_MIN = 20;
 let pedidos = [];
+let filtro = "todos";
+let soundEnabled = false;
+let audioCtx = null;
+let noticeTimer = null;
+let noticeStartedAt = null;
+let noticeText = "";
+const wall = document.getElementById("wall");
 
-const TIEMPO_PREPARACION = 20;
-
-const pendientes = document.getElementById("pendientes");
-const enMarcha = document.getElementById("enMarcha");
-const listos = document.getElementById("listos");
-
-function escapeHtml(text){
-    return String(text ?? "")
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
+function escapeHtml(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+function nowMs(){return Date.now()}
+function pedidoAgeMin(p){return Math.max(0,Math.floor((nowMs()-new Date(p.creadoAt).getTime())/60000))}
+function fmtAge(p){const m=pedidoAgeMin(p);return m<=0?"AHORA":`Hace ${m} ${m===1?"minuto":"minutos"}`}
+function fmtTime(iso){return iso?new Intl.DateTimeFormat("es-AR",{timeZone:"America/Argentina/Buenos_Aires",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date(iso)):""}
+function isScheduledNow(p){if(p.modoRetiro!=="programado"||!p.retiroAt)return false;return new Date(p.retiroAt).getTime()-nowMs()<=PREP_MIN*60000}
+function urgency(p){
+  if(p.estado==="listo") return {rank:50,cls:"ready",label:"LISTO"};
+  const age=pedidoAgeMin(p);
+  if(p.modoRetiro==="programado"&&p.retiroAt){const diff=(new Date(p.retiroAt).getTime()-nowMs())/60000;if(diff<0)return {rank:0,cls:"delayed",label:"DEMORADO"};if(diff<=10)return {rank:1,cls:"urgent",label:"URGENTE"};if(diff<=PREP_MIN)return {rank:2,cls:"pending",label:"PREPARAR AHORA"}}
+  if(age>=30)return {rank:3,cls:"delayed",label:"DEMORADO"};
+  if(age>=20)return {rank:4,cls:p.estado==="en_marcha"?"cooking":"urgent",label:p.estado==="en_marcha"?"EN MARCHA":"ATENCIÓN"};
+  return p.estado==="en_marcha"?{rank:20,cls:"cooking",label:"EN MARCHA"}:{rank:10,cls:"pending",label:"SIN INICIAR"};
 }
-
-function fechaLocal(iso){
-    return new Date(iso);
+function sortTickets(list){return [...list].sort((a,b)=>{const ua=urgency(a),ub=urgency(b);if(ua.rank!==ub.rank)return ua.rank-ub.rank;const ta=a.estado==="listo"?(a.listoAt||a.creadoAt):a.creadoAt;const tb=b.estado==="listo"?(b.listoAt||b.creadoAt):b.creadoAt;return new Date(ta)-new Date(tb)})}
+function productDetails(p){const d=[];if(p.preparacion)d.push(p.preparacion);if(p.tostado)d.push(p.tostado);if(p.guarnicion)d.push("Guarnición: "+p.guarnicion);d.push(...(p.modificaciones||[]));d.push(...(p.adicionales||[]).map(x=>"+ "+x));return d}
+function renderTicket(p){
+  const u=urgency(p);const scheduled=p.modoRetiro==="programado"&&p.retiroAt;const age=pedidoAgeMin(p);const hot=age>=20;
+  const action=p.estado==="pendiente"?`<button class="action action-start" onclick="changeState(${p.id},'marchar',this)">▶ INICIAR PREPARACIÓN</button>`:p.estado==="en_marcha"?`<button class="action action-ready" onclick="changeState(${p.id},'listo',this)">✓ PEDIDO LISTO</button>`:`<button class="action action-deliver" onclick="changeState(${p.id},'entregado',this)">📦 ENTREGADO</button>`;
+  const items=(Array.isArray(p.productos)?p.productos:[]).map(x=>{const d=productDetails(x);return `<div class="item"><div class="item-main"><div class="qty">${Number(x.cantidad)||0}</div><div class="item-name">${escapeHtml(x.nombre||"")}</div></div>${d.length?`<div class="details">${d.map(escapeHtml).join(" · ")}</div>`:""}</div>`}).join("");
+  return `<article class="ticket ${u.cls}" data-id="${p.id}">
+    <div class="ticket-top"><div class="ticket-id">#${escapeHtml(p.numero)}</div><div class="status">${u.label}</div></div>
+    <div class="ticket-meta"><div class="destination">${escapeHtml(p.destino||"")}</div>${p.cliente?`<div class="customer">👤 ${escapeHtml(p.cliente)}</div>`:""}<div class="time-row"><span class="age ${hot?'hot':''}">⏱ ${fmtAge(p)}</span>${scheduled?`<span class="scheduled">RETIRO ${fmtTime(p.retiroAt)}</span>`:""}</div></div>
+    <div class="items">${items||'<div class="empty">Sin productos</div>'}</div>${p.observacion?`<div class="note">⚠ ${escapeHtml(p.observacion)}</div>`:""}<div class="ticket-actions">${action}</div>
+  </article>`;
 }
-
-function minutosHasta(date){
-    return Math.round((date.getTime() - Date.now()) / 60000);
-}
-
-function formatoDuracion(ms){
-    const totalMinutos = Math.max(0, Math.ceil(ms / 60000));
-    const dias = Math.floor(totalMinutos / 1440);
-    const horas = Math.floor((totalMinutos % 1440) / 60);
-    const minutos = totalMinutos % 60;
-    const partes = [];
-
-    if(dias > 0) partes.push(`${dias} ${dias === 1 ? "día" : "días"}`);
-    if(horas > 0) partes.push(`${horas} ${horas === 1 ? "hora" : "horas"}`);
-    if(minutos > 0 || partes.length === 0){
-        partes.push(`${minutos} ${minutos === 1 ? "minuto" : "minutos"}`);
-    }
-
-    if(partes.length === 1) return partes[0];
-    if(partes.length === 2) return `${partes[0]} y ${partes[1]}`;
-    return `${partes[0]}, ${partes[1]} y ${partes[2]}`;
-}
-
-function tieneEmpanadas(pedido){
-    return pedido.productos.some(p => p.nombre.toLowerCase().includes("empanada"));
-}
-
-function tiempoDesdePedido(pedido){
-    const creado = fechaPedido(pedido);
-    const minutos = Math.floor(Math.max(0, Date.now() - creado.getTime()) / 60000);
-
-    if(minutos === 0){
-        return "AHORA";
-    }
-
-    if(minutos < 60){
-        return `Hace ${minutos} ${minutos === 1 ? "minuto" : "minutos"}`;
-    }
-
-    const horas = Math.floor(minutos / 60);
-    const minutosRestantes = minutos % 60;
-
-    if(minutosRestantes === 0){
-        return `Hace ${horas} ${horas === 1 ? "hora" : "horas"}`;
-    }
-
-    return `Hace ${horas} ${horas === 1 ? "hora" : "horas"} y ${minutosRestantes} ${minutosRestantes === 1 ? "minuto" : "minutos"}`;
-}
-
-function datosUrgencia(pedido){
-    if (pedido.modoRetiro !== "programado" || !pedido.retiroAt){
-        return {
-            clase:"ahora",
-            texto:"AHORA",
-            prioridad:0,
-            detalle:""
-        };
-    }
-
-    const retiro = fechaLocal(pedido.retiroAt);
-    const inicio = new Date(retiro.getTime() - TIEMPO_PREPARACION * 60000);
-    const faltanRetiro = minutosHasta(retiro);
-
-    if (faltanRetiro < 0){
-        return {
-            clase:"demorado",
-            texto:"🚨 DEMORADO",
-            prioridad:-4,
-            detalle:"La hora de retiro ya pasó"
-        };
-    }
-
-    if (faltanRetiro <= 10){
-        return {
-            clase:"urgente",
-            texto:"🚨 URGENTE",
-            prioridad:-3,
-            detalle:`Retiro en ${Math.max(0,faltanRetiro)} min`
-        };
-    }
-
-    if (Date.now() >= inicio.getTime()){
-        return {
-            clase:"preparar",
-            texto:"🔴 PREPARAR AHORA",
-            prioridad:-2,
-            detalle:`Debe estar listo para ${formatoHora(retiro)}`
-        };
-    }
-
-    return {
-        clase:"proximamente",
-        texto:"🟡 PRÓXIMAMENTE",
-        prioridad:1,
-        detalle:`Comenzar en ${formatoDuracion(inicio.getTime() - Date.now())}`
-    };
-}
-
-function formatoHora(date){
-    return date.toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
-}
-
-function formatoFecha(date){
-    return date.toLocaleDateString("es-AR",{day:"2-digit",month:"2-digit"});
-}
-
-function fechaPedido(pedido){
-    return new Date(pedido.creadoAt);
-}
-
-function prioridad(pedido){
-    const u = datosUrgencia(pedido);
-    const retiro = pedido.retiroAt ? new Date(pedido.retiroAt).getTime() : 0;
-    const creado = new Date(pedido.creadoAt).getTime();
-
-    if (pedido.modoRetiro !== "programado") {
-        return [0, 0, creado];
-    }
-
-    const inicio = retiro - TIEMPO_PREPARACION * 60000;
-
-    // Los programados que ya deben comenzar se colocan antes que los que aún esperan.
-    if (Date.now() >= inicio) {
-        return [1, Math.max(0,retiro-Date.now()), creado];
-    }
-
-    return [2, inicio-Date.now(), creado];
-}
-
-function ordenarPendientes(lista){
-    return lista.sort((a,b)=>{
-        const pa = prioridad(a);
-        const pb = prioridad(b);
-
-        for(let i=0;i<pa.length;i++){
-            if(pa[i] !== pb[i]) return pa[i] - pb[i];
-        }
-        return 0;
-    });
-}
-
 function render(){
-    const activos = pedidos.filter(p => p.estado !== "entregado");
-    const peds = ordenarPendientes(activos.filter(p => p.estado === "pendiente"));
-    const marcha = activos.filter(p => p.estado === "en_marcha")
-        .sort((a,b)=>new Date(a.creadoAt)-new Date(b.creadoAt));
-    const list = activos.filter(p => p.estado === "listo")
-        .sort((a,b)=>new Date(a.listoAt||a.creadoAt)-new Date(b.listoAt||b.creadoAt));
-
-    pendientes.className = "grid";
-    enMarcha.className = "grid";
-    listos.className = "grid";
-
-    pendientes.innerHTML = peds.map((p,i)=>renderPedidoPendiente(p,i,peds.length)).join("");
-    enMarcha.innerHTML = marcha.map((p,i)=>renderPedidoEnMarcha(p,i,marcha.length)).join("");
-    listos.innerHTML = list.map((p,i)=>renderPedidoListo(p,i,list.length)).join("");
-
-    document.getElementById("vacioPendientes").style.display = peds.length ? "none" : "block";
-    document.getElementById("vacioEnMarcha").style.display = marcha.length ? "none" : "block";
-    document.getElementById("vacioListos").style.display = list.length ? "none" : "block";
-
-    document.getElementById("contadorPendientes").textContent = `(${peds.length})`;
-    document.getElementById("contadorEnMarcha").textContent = `(${marcha.length})`;
-    document.getElementById("contadorListos").textContent = `(${list.length})`;
+  const activos=sortTickets(pedidos.filter(p=>p.estado!=="entregado"&&p.estado!=="anulado"));
+  const filtered=filtro==="todos"?activos:activos.filter(p=>p.estado===filtro);
+  wall.innerHTML=filtered.length?filtered.map(renderTicket).join(""):'<div class="empty">No hay pedidos para mostrar.</div>';
+  const delayed=activos.filter(p=>urgency(p).cls==="delayed").length;
+  document.getElementById("mTotal").textContent=activos.length;
+  document.getElementById("mPending").textContent=activos.filter(p=>p.estado==="pendiente").length;
+  document.getElementById("mCooking").textContent=activos.filter(p=>p.estado==="en_marcha").length;
+  document.getElementById("mReady").textContent=activos.filter(p=>p.estado==="listo").length;
+  document.getElementById("mDelayed").textContent=delayed;
 }
-
-function renderProductos(pedido, compacto=false){
-    return pedido.productos.map(p=>{
-        let detalles = [];
-        if(p.preparacion) detalles.push(p.preparacion);
-        if(p.guarnicion) detalles.push("Guarnición: "+p.guarnicion);
-        if(p.tostado) detalles.push(p.tostado);
-        detalles.push(...(p.modificaciones||[]));
-        detalles.push(...(p.adicionales||[]).map(a=>"+ "+a));
-
-        return `
-        <div class="producto">
-            <strong><span class="cantidad">${p.cantidad} ×</span><span class="nombre-producto">${escapeHtml(p.nombre)}</span></strong>
-            ${detalles.length && !compacto ? `<div class="detalle">${detalles.map(escapeHtml).join(" · ")}</div>` : ""}
-        </div>`;
-    }).join("");
+function replacePedido(p){const i=pedidos.findIndex(x=>x.id===p.id);if(i<0)pedidos.push(p);else pedidos[i]=p}
+async function changeState(id,state,btn){
+  if(btn){btn.disabled=true;btn.textContent="ACTUALIZANDO…"}
+  try{const r=await fetch(`/api/pedidos/${id}/${state}`,{method:"POST"});const data=await r.json();if(!r.ok||!data.ok)throw new Error(data.mensaje||"No se pudo actualizar el pedido");if(data.pedido)replacePedido(data.pedido);render()}catch(e){console.error(e);alert(e.message||"No se pudo actualizar el pedido.");render()}
 }
-
-function renderPedidoPendiente(pedido,indice,total){
-    const u = datosUrgencia(pedido);
-
-    return `
-    <article class="pedido ${u.clase}" data-pedido-id="${pedido.id}">
-        <div class="cabecera">
-            <div class="identificacion">
-                <div class="numero">#${pedido.numero}</div>
-                <div class="separador-identificacion"></div>
-                <div class="destino-principal"><span class="destino-text">${escapeHtml(pedido.destino)}${pedido.cliente ? " -" : ""}</span>${pedido.cliente ? `<span class="cliente-inline">👤 ${escapeHtml(pedido.cliente)}</span>` : ""}</div>
-            </div>
-            <div class="estado">${u.texto}</div>
-        </div>
-
-        ${pedido.modoRetiro === "programado" && pedido.retiroAt
-            ? `<div class="horario">📅 Retiro: ${formatoFecha(new Date(pedido.retiroAt))} ${formatoHora(new Date(pedido.retiroAt))}</div>`
-            : ""}
-
-        <div class="tiempo-pedido">${tiempoDesdePedido(pedido)}</div>
-        ${pedido.modoRetiro === "programado"
-            ? `<div class="meta"><strong>${escapeHtml(u.detalle)}</strong></div>`
-            : ""}
-
-        <div class="productos">${renderProductos(pedido,false)}</div>
-        ${pedido.observacion ? `<div class="observacion">⚠️ ${escapeHtml(pedido.observacion)}</div>` : ""}
-
-        <button class="btn-marchar" onclick="marcharPedido(${pedido.id})">▶ MARCHAR</button>
-    </article>`;
-}
-
-function renderPedidoEnMarcha(pedido,indice,total){
-    return `
-    <article class="pedido en-marcha" data-pedido-id="${pedido.id}">
-        <div class="cabecera">
-            <div class="identificacion">
-                <div class="numero">#${pedido.numero}</div>
-                <div class="separador-identificacion"></div>
-                <div class="destino-principal"><span class="destino-text">${escapeHtml(pedido.destino)}${pedido.cliente ? " -" : ""}</span>${pedido.cliente ? `<span class="cliente-inline">👤 ${escapeHtml(pedido.cliente)}</span>` : ""}</div>
-            </div>
-            <div class="estado">🔵 EN MARCHA</div>
-        </div>
-
-        ${pedido.modoRetiro === "programado" && pedido.retiroAt
-            ? `<div class="horario">📅 Retiro: ${formatoHora(new Date(pedido.retiroAt))}</div>`
-            : ""}
-
-        <div class="tiempo-pedido">${tiempoDesdePedido(pedido)}</div>
-        <div class="productos">${renderProductos(pedido,false)}</div>
-        ${pedido.observacion ? `<div class="observacion">⚠️ ${escapeHtml(pedido.observacion)}</div>` : ""}
-
-        <button class="btn-listo" onclick="marcarListo(${pedido.id})">✓ PEDIDO LISTO</button>
-    </article>`;
-}
-
-function renderPedidoListo(pedido,indice,total){
-    const listo = pedido.listoAt ? new Date(pedido.listoAt) : new Date();
-    const espera = Math.max(0,Math.floor((Date.now()-listo.getTime())/60000));
-    return `
-    <article class="pedido listo" data-pedido-id="${pedido.id}">
-        <div class="cabecera">
-            <div class="identificacion">
-                <div class="numero">#${pedido.numero}</div>
-                <div class="separador-identificacion"></div>
-                <div class="destino-principal"><span class="destino-text">${escapeHtml(pedido.destino)}${pedido.cliente ? " -" : ""}</span>${pedido.cliente ? `<span class="cliente-inline">👤 ${escapeHtml(pedido.cliente)}</span>` : ""}</div>
-            </div>
-            <div class="estado">🟢 LISTO</div>
-        </div>
-
-        ${pedido.modoRetiro === "programado" && pedido.retiroAt
-            ? `<div class="horario">📅 Retiro: ${formatoHora(new Date(pedido.retiroAt))}</div>`
-            : ""}
-
-        <div class="meta">Esperando retiro: ${espera} min</div>
-        <div class="productos">${renderProductos(pedido,false)}</div>
-        ${pedido.observacion ? `<div class="observacion">⚠️ ${escapeHtml(pedido.observacion)}</div>` : ""}
-
-        <button class="btn-entregado" onclick="marcarEntregado(${pedido.id})">📦 PEDIDO ENTREGADO</button>
-    </article>`;
-}
-
-async function cambiarEstado(id,url){
-    const respuesta = await fetch(url,{method:"POST"});
-    const resultado = await respuesta.json();
-
-    if(!resultado.ok){
-        alert(resultado.mensaje || "No se pudo actualizar el pedido.");
-    }
-}
-
-async function marcharPedido(id){
-    await cambiarEstado(id,`/api/pedidos/${id}/marchar`);
-}
-
-async function marcarListo(id){
-    await cambiarEstado(id,`/api/pedidos/${id}/listo`);
-}
-
-async function marcarEntregado(id){
-    await cambiarEstado(id,`/api/pedidos/${id}/entregado`);
-}
-
-let audioContext = null;
-let sonidoActivo = false;
-
-async function activarAudio(){
-    try{
-        if(!audioContext){
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        }
-
-        if(audioContext.state !== "running"){
-            await audioContext.resume();
-        }
-
-        sonidoActivo = audioContext.state === "running";
-
-        const boton = document.getElementById("btnSonido");
-        if(boton && sonidoActivo){
-            boton.textContent = "🔊 SONIDO ACTIVO";
-            boton.classList.add("activo");
-        }
-
-        return sonidoActivo;
-    }catch(error){
-        console.error("No se pudo activar el audio:", error);
-        return false;
-    }
-}
-
-async function activarAudioManual(){
-    const activo = await activarAudio();
-
-    if(activo){
-        await sonidoNuevaComanda();
-    }
-}
-
-async function sonidoNuevaComanda(){
-    const activo = await activarAudio();
-    if(!activo || !audioContext) return;
-
-    const ahora = audioContext.currentTime;
-
-    // Dos tonos cortos y bien diferenciados para una cocina.
-    const notas = [
-        {frecuencia:880, inicio:0},
-        {frecuencia:1174, inicio:0.18}
-    ];
-
-    notas.forEach(nota => {
-        const oscilador = audioContext.createOscillator();
-        const ganancia = audioContext.createGain();
-        const inicio = ahora + nota.inicio;
-
-        oscilador.type = "sine";
-        oscilador.frequency.setValueAtTime(nota.frecuencia, inicio);
-
-        ganancia.gain.setValueAtTime(0.0001, inicio);
-        ganancia.gain.exponentialRampToValueAtTime(0.28, inicio + 0.025);
-        ganancia.gain.exponentialRampToValueAtTime(0.0001, inicio + 0.20);
-
-        oscilador.connect(ganancia);
-        ganancia.connect(audioContext.destination);
-
-        oscilador.start(inicio);
-        oscilador.stop(inicio + 0.21);
-    });
-}
-
-async function cerrarSesion(){
-    try{
-        await fetch("/api/logout",{method:"POST"});
-    }finally{
-        window.location.href = "/login.html?redirect=/cocina.html";
-    }
-}
-
-// El primer clic en la pantalla habilita el audio del navegador.
-document.addEventListener("click", () => {
-    if(!sonidoActivo) activarAudio();
-}, {once:true});
-
-// Actualiza "AHORA", "Hace 1 minuto", "Hace 2 minutos", etc.
-setInterval(() => render(), 60000);
-
-const eventos = new EventSource("/api/cocina");
-
-eventos.onmessage = event => {
-    const data = JSON.parse(event.data);
-
-    if(data.tipo === "inicio"){
-        // Las comandas existentes NO generan sonido ni animación.
-        pedidos = data.pedidos;
-        render();
-        return;
-    }
-
-    if(data.pedido){
-        const indice = pedidos.findIndex(p => p.id === data.pedido.id);
-        const esNueva = indice === -1;
-
-        if(esNueva){
-            pedidos.push(data.pedido);
-        }else{
-            pedidos[indice] = data.pedido;
-        }
-
-        if(data.pedido.estado === "entregado"){
-            pedidos = pedidos.filter(p => p.id !== data.pedido.id);
-        }
-
-        render();
-
-        // Solo una comanda realmente nueva y pendiente dispara aviso.
-        if(esNueva && data.pedido.estado === "pendiente"){
-            sonidoNuevaComanda();
-
-            const tarjeta = document.querySelector(
-                `[data-pedido-id="${data.pedido.id}"]`
-            );
-
-            if(tarjeta){
-                tarjeta.classList.add("nueva");
-
-                setTimeout(() => {
-                    tarjeta.classList.remove("nueva");
-                }, 5200);
-            }
-        }
-    }
-};
-
-eventos.onerror = () => {
-    // EventSource intenta reconectar automáticamente.
-};
-
-(function(){
-    const fecha = document.getElementById("fechaCocina");
-    function actualizarFecha(){
-        const ahora = new Date();
-        if(fecha) fecha.textContent = new Intl.DateTimeFormat("es-AR",{timeZone:"America/Argentina/Buenos_Aires",weekday:"long",day:"2-digit",month:"long",year:"numeric"}).format(ahora).replace(/^./,c=>c.toUpperCase());
-    }
-    actualizarFecha();
-    setInterval(actualizarFecha,60000);
-})();
-
-setInterval(()=>{
-    document.getElementById("reloj").textContent =
-        new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
-    render();
-},1000);
-
+function activateSound(){try{audioCtx=audioCtx||new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state!=="running")audioCtx.resume();soundEnabled=true;const b=document.getElementById("soundBtn");b.textContent="🔊 SONIDO ACTIVO";b.classList.add("active");}catch(e){console.error(e)}}
+function beep(){if(!soundEnabled||!audioCtx)return;const t=audioCtx.currentTime;[880,1174].forEach((f,i)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=f;o.type="sine";g.gain.setValueAtTime(.0001,t+i*.18);g.gain.exponentialRampToValueAtTime(.25,t+i*.18+.02);g.gain.exponentialRampToValueAtTime(.0001,t+i*.18+.2);o.connect(g);g.connect(audioCtx.destination);o.start(t+i*.18);o.stop(t+i*.18+.21)})}
+document.getElementById("soundBtn").onclick=activateSound;
+document.querySelectorAll(".filter").forEach(b=>b.onclick=()=>{document.querySelectorAll(".filter").forEach(x=>x.classList.remove("active"));b.classList.add("active");filtro=b.dataset.filter;render()});
+function showNotice(texto){noticeText=String(texto||"").trim();if(!noticeText)return;noticeStartedAt=Date.now();clearTimeout(noticeTimer);document.getElementById("noticeText").textContent=noticeText;document.getElementById("noticeAge").textContent="AHORA";document.getElementById("notice").classList.add("show");noticeTimer=setTimeout(()=>{document.getElementById("notice").classList.remove("show");noticeText=""},8000)}
+function updateNoticeAge(){if(!noticeStartedAt||!noticeText)return;const s=Math.max(0,Math.floor((Date.now()-noticeStartedAt)/1000));document.getElementById("noticeAge").textContent=s<60?`Hace ${s}s`:`Hace ${Math.floor(s/60)}m`}
+function connect(){const es=new EventSource("/api/cocina");document.getElementById("connectionText").textContent="Tiempo real · conectando…";es.onopen=()=>document.getElementById("connectionText").textContent="Tiempo real · conectado";es.onmessage=e=>{try{const d=JSON.parse(e.data);if(d.tipo==="inicio"){pedidos=d.pedidos||[];render();return}if(d.tipo==="nuevo"){replacePedido(d.pedido);render();beep();const card=document.querySelector(`[data-id="${d.pedido.id}"]`);if(card){card.classList.add("new");setTimeout(()=>card.classList.remove("new"),3500)}return}if(d.tipo==="estado"&&d.pedido){replacePedido(d.pedido);if(d.pedido.estado==="entregado"||d.pedido.estado==="anulado")pedidos=pedidos.filter(p=>p.id!==d.pedido.id);render();return}if(d.tipo==="mensaje"){showNotice(d.mensaje);beep();return}if(d.tipo==="error")console.error(d.mensaje)}catch(err){console.error(err)}};es.onerror=()=>document.getElementById("connectionText").textContent="Tiempo real · reconectando…"}
+connect();
+setInterval(()=>{render();updateNoticeAge()},10000);
+setInterval(()=>{const n=new Date();document.getElementById("clock").textContent=new Intl.DateTimeFormat("es-AR",{timeZone:"America/Argentina/Buenos_Aires",hour:"2-digit",minute:"2-digit",hour12:false}).format(n);document.getElementById("date").textContent=new Intl.DateTimeFormat("es-AR",{timeZone:"America/Argentina/Buenos_Aires",weekday:"short",day:"2-digit",month:"short"}).format(n)},1000);
 render();
-
 </script>
 </body>
 </html>
