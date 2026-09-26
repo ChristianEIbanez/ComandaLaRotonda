@@ -25,36 +25,152 @@ body{display:flex;flex-direction:column}
 .main{flex:1;min-height:0;padding:8px 8px 10px;display:flex;flex-direction:column;gap:9px}
 .notice{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(5px);align-items:center;justify-content:center;padding:40px;z-index:1000}.notice.show{display:flex}.notice-box{width:min(1100px,94vw);border:2px solid #ff8a1c;background:linear-gradient(180deg,#251609,#100b06);border-radius:18px;box-shadow:0 25px 90px rgba(0,0,0,.7);padding:34px 44px;text-align:center}.notice-icon{font-size:54px;line-height:1}.notice-label{font-size:15px;color:#ffad66;font-weight:950;letter-spacing:3px;margin-top:10px}.notice-text{font-size:clamp(34px,5vw,72px);font-weight:950;letter-spacing:.5px;line-height:1.05;margin-top:18px}.notice-age{font-size:12px;color:#858f97;font-weight:800;margin-top:20px}
 .wall{
-  flex:1;min-height:0;overflow:auto;display:grid;
+  flex:1;min-height:0;min-width:0;overflow-x:hidden;overflow-y:auto;display:grid;
   gap:8px;padding:2px 4px 9px;
   grid-template-columns:1fr;
-  grid-template-rows:minmax(0,1fr);
+  grid-template-rows:none;
+  grid-auto-rows:minmax(295px,auto);
+  align-content:stretch;
   align-items:stretch;
   scrollbar-width:thin;scrollbar-color:#3c464e transparent;
 }
-.wall.layout-1{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr)}
-.wall.layout-2{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:minmax(0,1fr)}
-.wall.layout-3{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:minmax(0,1fr)}
-.wall.layout-4{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
-.wall.layout-5,.wall.layout-6{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
-.wall.layout-many{
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  grid-auto-rows:minmax(420px,1fr);
-  grid-template-rows:none;
-  align-content:start;
-}
-.wall.layout-many .ticket{min-height:420px}
+/*
+  LAYOUT ROBUSTO: las columnas cambian según la cantidad, pero las filas NO
+  tienen una altura fija. Cada fila puede crecer todo lo necesario para
+  contener la comanda más larga. Si el contenido supera la pantalla, el
+  contenedor hace scroll vertical. Nunca se recortan productos.
+*/
+.wall.layout-1{grid-template-columns:1fr}
+.wall.layout-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.wall.layout-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.wall.layout-4{grid-template-columns:repeat(2,minmax(0,1fr))}
+.wall.layout-5,.wall.layout-6,.wall.layout-many{grid-template-columns:repeat(3,minmax(0,1fr))}
 
-.ticket{background:linear-gradient(180deg,#f8fafb,#edf1f3);color:#111;border:2px solid #d3d9de;border-radius:11px;min-width:0;min-height:295px;height:100%;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 5px 18px rgba(0,0,0,.24);position:relative}.ticket.new{animation:newTicket .8s ease-in-out infinite}.ticket.pending{border-top:5px solid var(--yellow)}.ticket.cooking{border-top:5px solid var(--blue)}.ticket.ready{border-top:5px solid var(--green)}.ticket.urgent{border-top-color:var(--red);box-shadow:0 0 0 1px rgba(239,68,68,.25),0 6px 20px rgba(0,0,0,.28)}.ticket.delayed{border-top-color:#b91c1c;box-shadow:0 0 0 2px rgba(185,28,28,.25),0 6px 24px rgba(0,0,0,.3)}
+.ticket{background:linear-gradient(180deg,#f8fafb,#edf1f3);color:#111;border:2px solid #d3d9de;border-radius:11px;min-width:0;min-height:295px;height:auto;display:flex;flex-direction:column;overflow:visible;box-shadow:0 5px 18px rgba(0,0,0,.24);position:relative}.ticket.new{animation:newTicket .8s ease-in-out infinite}.ticket.pending{border-top:5px solid var(--yellow)}.ticket.scheduled{border-top:5px solid var(--purple);box-shadow:0 0 0 1px rgba(155,135,245,.18),0 5px 18px rgba(0,0,0,.24)}.ticket.scheduled .status{background:#eee9ff;color:#6347a8}.ticket.scheduled .scheduled{background:#eee9ff;color:#6347a8}.ticket.cooking{border-top:5px solid var(--blue)}.ticket.ready{border-top:5px solid var(--green)}.ticket.urgent{border-top-color:var(--red);box-shadow:0 0 0 1px rgba(239,68,68,.25),0 6px 20px rgba(0,0,0,.28)}.ticket.delayed{border-top-color:#b91c1c;box-shadow:0 0 0 2px rgba(185,28,28,.25),0 6px 24px rgba(0,0,0,.3)}
 @keyframes newTicket{0%,100%{transform:scale(1)}50%{transform:scale(1.012)}}
 .ticket-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:10px 11px 8px;border-bottom:1px solid #dbe0e4}.ticket-id{font-size:38px;line-height:.9;font-weight:950;letter-spacing:-1.5px}.status{font-size:10px;font-weight:950;padding:6px 8px;border-radius:6px;background:#e5e9ec;white-space:nowrap}.pending .status{background:#fff1ad}.cooking .status{background:#dceeff;color:#075f9f}.ready .status{background:#d9f7e5;color:#0c7a3d}.urgent .status,.delayed .status{background:#ffe0df;color:#b42318}
 .ticket-meta{padding:9px 11px 9px;border-bottom:1px solid #e0e4e7}.destination-line{font-size:clamp(25px,1.8vw,34px);font-weight:950;line-height:1.02;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;display:block}.destination-line .customer-inline{font-weight:950}.time-row{display:flex;align-items:center;justify-content:space-between;gap:7px;margin-top:8px}.age{font-size:13px;font-weight:950;color:#4b5560}.age.hot{color:#c21f1f}.scheduled{font-size:10px;font-weight:950;background:#fff2e4;color:#9a4b00;border-radius:5px;padding:4px 6px;white-space:nowrap}
-.items{padding:7px 11px 2px;flex:1;min-height:0;overflow:hidden}.item{padding:10px 0;border-bottom:1px solid #e1e5e8}.item:last-child{border-bottom:0}.item-main{display:grid;grid-template-columns:52px minmax(0,1fr);gap:8px;align-items:start}.qty{font-size:clamp(30px,2vw,40px);font-weight:950;text-align:left;line-height:1}.item-name{font-size:clamp(22px,1.55vw,31px);font-weight:950;line-height:1.05;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}.details{font-size:clamp(15px,1vw,19px);color:#4b5560;font-weight:800;line-height:1.18;margin:6px 0 0 60px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}.note{margin:6px 10px 8px;padding:7px 8px;border-left:4px solid var(--orange);background:#fff0df;border-radius:5px;color:#63310c;font-size:11px;font-weight:900;line-height:1.25}.ticket-actions{padding:8px 10px;background:#e7ebee;border-top:1px solid #d3d9de}.action{width:100%;border:0;border-radius:7px;padding:11px 10px;color:#fff;font-size:12px;font-weight:950;cursor:pointer;transition:.12s}.action:hover{filter:brightness(1.05)}.action:disabled{opacity:.55;cursor:wait}.action-start{background:linear-gradient(135deg,#ef8b18,#ff7a00)}.action-ready{background:linear-gradient(135deg,#087fd6,#1b9cf0)}.action-deliver{background:linear-gradient(135deg,#138c45,#20b15a)}
+.items{padding:7px 11px 2px;flex:1;min-height:0;overflow:visible}.item{padding:10px 0;border-bottom:1px solid #e1e5e8}.item:last-child{border-bottom:0}.item-main{display:grid;grid-template-columns:52px minmax(0,1fr);gap:8px;align-items:start}.qty{font-size:clamp(30px,2vw,40px);font-weight:950;text-align:left;line-height:1}.item-name{font-size:clamp(22px,1.55vw,31px);font-weight:950;line-height:1.05;overflow-wrap:anywhere}.details{font-size:clamp(15px,1vw,19px);color:#4b5560;font-weight:800;line-height:1.18;margin:6px 0 0 60px;overflow-wrap:anywhere}.note{margin:6px 10px 8px;padding:7px 8px;border-left:4px solid var(--orange);background:#fff0df;border-radius:5px;color:#63310c;font-size:11px;font-weight:900;line-height:1.25}.ticket-actions{padding:8px 10px;background:#e7ebee;border-top:1px solid #d3d9de}.action{width:100%;border:0;border-radius:7px;padding:11px 10px;color:#fff;font-size:12px;font-weight:950;cursor:pointer;transition:.12s}.action:hover{filter:brightness(1.05)}.action:disabled{opacity:.55;cursor:wait}.action-start{background:linear-gradient(135deg,#ef8b18,#ff7a00)}.action-ready{background:linear-gradient(135deg,#087fd6,#1b9cf0)}.action-deliver{background:linear-gradient(135deg,#138c45,#20b15a)}
 .empty{grid-column:1/-1;border:1px dashed #303940;border-radius:10px;padding:30px;text-align:center;color:#69747d;font-size:13px;font-weight:850}
 .footer{flex:0 0 25px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;color:#59636b;font-size:9px;font-weight:800;background:#080a0c;border-top:1px solid #1e252a}.footer strong{color:#7d878f}
+/* FIX DEFINITIVO: una comanda crece con TODO su contenido */
+.wall,.wall.layout-1,.wall.layout-2,.wall.layout-3,.wall.layout-4,.wall.layout-5,.wall.layout-6,.wall.layout-many{
+  grid-template-rows:none!important;
+  grid-auto-rows:minmax(295px,auto)!important;
+  align-content:stretch!important;
+  align-items:stretch!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+}
+.ticket{height:auto!important;min-height:295px!important;overflow:visible!important}
+.items{height:auto!important;min-height:0!important;overflow:visible!important;flex:0 0 auto!important}
+.item{height:auto!important;overflow:visible!important}
+.item-name,.details{overflow:visible!important;display:block!important;-webkit-line-clamp:unset!important}
+
 @media(max-width:1250px){.header{grid-template-columns:260px 1fr}.header-right{grid-column:2;grid-row:1;justify-content:flex-end}.metrics{grid-column:1/-1;grid-row:2}.header{height:124px;flex-basis:124px}.toolbar{flex-basis:48px}}
 @media(max-width:800px){html,body{overflow:auto}.header{height:auto;flex:none;grid-template-columns:1fr auto;padding:9px 11px}.metrics{grid-column:1/-1;grid-row:2;overflow:auto;grid-template-columns:repeat(5,100px)}.header-right{grid-column:2;grid-row:1}.online{display:none}.brand img{width:44px;height:44px}.brand-name{font-size:15px}.brand-sub{font-size:9px}.clock-time{font-size:18px}.toolbar{overflow:auto}.main{min-height:calc(100vh - 160px)}.wall,.wall.layout-1,.wall.layout-2,.wall.layout-3,.wall.layout-4,.wall.layout-5,.wall.layout-6,.wall.layout-many{grid-template-columns:1fr;grid-template-rows:none;grid-auto-rows:minmax(295px,auto)}.wall .ticket,.wall.layout-many .ticket{height:auto;min-height:295px}.notice-text{font-size:18px}}
 </style>
+
+<style id="kds-layout-definitivo">
+/* =========================================================
+   KDS - LAYOUT NATURAL / MASONRY
+   - Las tarjetas tienen altura natural según sus productos.
+   - NO hay scroll dentro de una tarjeta.
+   - El único scroll es el de toda la pared de Cocina.
+   - 1 pedido = 1 columna
+   - 2 pedidos = 2 columnas
+   - 3 o más = 3 columnas
+   - Las tarjetas conservan su posición lógica: 1,2,3 arriba;
+     4 debajo de 1; 5 debajo de 2; 6 debajo de 3, etc.
+   ========================================================= */
+
+.wall{
+  min-height:0 !important;
+  min-width:0 !important;
+  display:grid !important;
+  gap:8px !important;
+  grid-template-columns:1fr !important;
+  grid-template-rows:none !important;
+  align-items:start !important;
+  align-content:start !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+  scrollbar-width:thin;
+  scrollbar-color:#3c464e transparent;
+}
+
+/* Contenedores de cada columna. El alto lo determina su contenido. */
+.masonry-col{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:8px;
+}
+
+/* Cantidad de columnas */
+.wall.layout-1{grid-template-columns:1fr !important}
+.wall.layout-2{grid-template-columns:repeat(2,minmax(0,1fr)) !important}
+.wall.layout-3,
+.wall.layout-4,
+.wall.layout-5,
+.wall.layout-6,
+.wall.layout-many{grid-template-columns:repeat(3,minmax(0,1fr)) !important}
+
+/* Tarjeta: altura 100% PROHIBIDA. Crece según sus productos. */
+.ticket{
+  min-width:0 !important;
+  min-height:0 !important;
+  height:auto !important;
+  max-height:none !important;
+  display:flex !important;
+  flex-direction:column !important;
+  overflow:visible !important;
+  flex:0 0 auto !important;
+}
+
+/* Todo el contenido de la comanda es visible. */
+.items{
+  height:auto !important;
+  min-height:0 !important;
+  overflow:visible !important;
+  flex:0 0 auto !important;
+}
+
+.item{
+  height:auto !important;
+  overflow:visible !important;
+}
+
+.item-name,
+.details{
+  overflow:visible !important;
+  display:block !important;
+  -webkit-line-clamp:unset !important;
+}
+
+/* El botón queda debajo del contenido, nunca flotando sobre productos. */
+.ticket-actions{
+  flex:0 0 auto !important;
+}
+
+/* En pantallas chicas: una sola columna y scroll general. */
+@media(max-width:800px){
+  .wall,
+  .wall.layout-1,
+  .wall.layout-2,
+  .wall.layout-3,
+  .wall.layout-4,
+  .wall.layout-5,
+  .wall.layout-6,
+  .wall.layout-many{
+    grid-template-columns:1fr !important;
+    grid-template-rows:none !important;
+    overflow-y:auto !important;
+  }
+}
+</style>
+
 </head>
 <body>
 <header class="header">
@@ -87,6 +203,7 @@ let soundEnabled = false;
 let audioCtx = null;
 let soundUnlockShown = false;
 const pendingSoundTimers = new Map();
+const scheduledAlertsPlayed = new Set();
 const SOUND_REPEAT_MS = 60000;
 let noticeTimer = null;
 let noticeStartedAt = null;
@@ -101,21 +218,32 @@ function fmtTime(iso){return iso?new Intl.DateTimeFormat("es-AR",{timeZone:"Amer
 function isScheduledNow(p){if(p.modoRetiro!=="programado"||!p.retiroAt)return false;return new Date(p.retiroAt).getTime()-nowMs()<=PREP_MIN*60000}
 function urgency(p){
   if(p.estado==="listo") return {rank:50,cls:"ready",label:"LISTO"};
+
+  // Los programados permanecen tranquilos hasta 20 minutos antes.
+  if(p.modoRetiro==="programado"&&p.retiroAt){
+    const diff=(new Date(p.retiroAt).getTime()-nowMs())/60000;
+    if(p.estado==="pendiente" && diff>PREP_MIN){
+      return {rank:5,cls:"scheduled",label:"PROGRAMADO"};
+    }
+    if(diff<0)return {rank:0,cls:"delayed",label:"DEMORADO"};
+    if(diff<=10)return {rank:1,cls:"urgent",label:"URGENTE"};
+    if(diff<=PREP_MIN)return {rank:2,cls:"pending",label:"PREPARAR AHORA"};
+  }
+
   const age=pedidoAgeMin(p);
-  if(p.modoRetiro==="programado"&&p.retiroAt){const diff=(new Date(p.retiroAt).getTime()-nowMs())/60000;if(diff<0)return {rank:0,cls:"delayed",label:"DEMORADO"};if(diff<=10)return {rank:1,cls:"urgent",label:"URGENTE"};if(diff<=PREP_MIN)return {rank:2,cls:"pending",label:"PREPARAR AHORA"}}
-  if(age>=30)return {rank:3,cls:"delayed",label:"DEMORADO"};
+  if(age>=30)return {rank:3,cls:p.estado==="en_marcha"?"cooking":"urgent",label:p.estado==="en_marcha"?"EN MARCHA":"ATENCIÓN"};
   if(age>=20)return {rank:4,cls:p.estado==="en_marcha"?"cooking":"urgent",label:p.estado==="en_marcha"?"EN MARCHA":"ATENCIÓN"};
   return p.estado==="en_marcha"?{rank:20,cls:"cooking",label:"EN MARCHA"}:{rank:10,cls:"pending",label:"SIN INICIAR"};
 }
 function sortTickets(list){return [...list].sort((a,b)=>{const ua=urgency(a),ub=urgency(b);if(ua.rank!==ub.rank)return ua.rank-ub.rank;const ta=a.estado==="listo"?(a.listoAt||a.creadoAt):a.creadoAt;const tb=b.estado==="listo"?(b.listoAt||b.creadoAt):b.creadoAt;return new Date(ta)-new Date(tb)})}
 function productDetails(p){const d=[];if(p.preparacion)d.push(p.preparacion);if(p.tostado)d.push(p.tostado);if(p.guarnicion)d.push("Guarnición: "+p.guarnicion);d.push(...(p.modificaciones||[]));d.push(...(p.adicionales||[]).map(x=>"+ "+x));return d}
 function renderTicket(p){
-  const u=urgency(p);const scheduled=p.modoRetiro==="programado"&&p.retiroAt;const age=pedidoAgeMin(p);const hot=age>=20;
+  const u=urgency(p);const scheduled=p.modoRetiro==="programado"&&p.retiroAt;const scheduledDormant=scheduled&&p.estado==="pendiente"&&((new Date(p.retiroAt).getTime()-nowMs())/60000)>PREP_MIN;const age=pedidoAgeMin(p);const hot=age>=20;
   const action=p.estado==="pendiente"?`<button class="action action-start" onclick="changeState(${p.id},'marchar',this)">▶ INICIAR PREPARACIÓN</button>`:p.estado==="en_marcha"?`<button class="action action-ready" onclick="changeState(${p.id},'listo',this)">✓ PEDIDO LISTO</button>`:`<button class="action action-deliver" onclick="changeState(${p.id},'entregado',this)">📦 ENTREGADO</button>`;
   const items=(Array.isArray(p.productos)?p.productos:[]).map(x=>{const d=productDetails(x);return `<div class="item"><div class="item-main"><div class="qty">${Number(x.cantidad)||0}</div><div class="item-name">${escapeHtml(x.nombre||"")}</div></div>${d.length?`<div class="details">${d.map(escapeHtml).join(" · ")}</div>`:""}</div>`}).join("");
-  return `<article class="ticket ${u.cls} ${p.estado==="pendiente"?"new":""}" data-id="${p.id}">
+  return `<article class="ticket ${u.cls} ${p.estado==="pendiente"&&!scheduledDormant?"new":""}" data-id="${p.id}">
     <div class="ticket-top"><div class="ticket-id">#${escapeHtml(p.numero)}</div><div class="status">${u.label}</div></div>
-    <div class="ticket-meta"><div class="destination-line">${escapeHtml(p.destino||"")}${p.cliente?` <span class="customer-inline">— ${escapeHtml(p.cliente)}</span>`:""}</div><div class="time-row"><span class="age ${hot?'hot':''}">⏱ ${fmtAge(p)}</span>${scheduled?`<span class="scheduled">RETIRO ${fmtTime(p.retiroAt)}</span>`:""}</div></div>
+    <div class="ticket-meta"><div class="destination-line">${escapeHtml(p.destino||"")}${p.cliente?` <span class="customer-inline">— ${escapeHtml(p.cliente)}</span>`:""}</div><div class="time-row"><span class="age ${hot?'hot':''}">⏱ ${fmtAge(p)}</span>${scheduled?`<span class="scheduled">${scheduledDormant?"PROGRAMADO · ":"RETIRO "}${fmtTime(p.retiroAt)}</span>`:""}</div></div>
     <div class="items">${items||'<div class="empty">Sin productos</div>'}</div>${p.observacion?`<div class="note">⚠ ${escapeHtml(p.observacion)}</div>`:""}<div class="ticket-actions">${action}</div>
   </article>`;
 }
@@ -124,13 +252,26 @@ function render(){
   const filtered=filtro==="todos"?activos:activos.filter(p=>p.estado===filtro);
 
   wall.className="wall";
-  if(filtered.length>=1 && filtered.length<=6){
+  if(filtered.length >= 1 && filtered.length <= 6){
     wall.classList.add(`layout-${filtered.length}`);
-  }else if(filtered.length>6){
+  }else if(filtered.length > 6){
     wall.classList.add("layout-many");
   }
 
-  wall.innerHTML=filtered.length?filtered.map(renderTicket).join(""):'<div class="empty">No hay pedidos para mostrar.</div>';
+  if(!filtered.length){
+    wall.innerHTML='<div class="empty">No hay pedidos para mostrar.</div>';
+    return;
+  }
+
+  const columnCount = filtered.length === 1 ? 1 : filtered.length === 2 ? 2 : 3;
+  const columns = Array.from({length:columnCount},()=>[]);
+  filtered.forEach((pedido,index)=>{
+    columns[index % columnCount].push(pedido);
+  });
+
+  wall.innerHTML = columns.map(col =>
+    `<div class="masonry-col">${col.map(renderTicket).join("")}</div>`
+  ).join("");
   const delayed=activos.filter(p=>urgency(p).cls==="delayed").length;
   document.getElementById("mTotal").textContent=activos.length;
   document.getElementById("mPending").textContent=activos.filter(p=>p.estado==="pendiente").length;
@@ -205,7 +346,14 @@ function sonidoCampana(){
 
 function programarSonidoPedido(p){
   if(!p||p.estado!=="pendiente")return;
+
+  if(p.modoRetiro==="programado"&&p.retiroAt){
+    const diff=(new Date(p.retiroAt).getTime()-nowMs())/60000;
+    if(diff>PREP_MIN)return;
+  }
+
   if(pendingSoundTimers.has(p.id))return;
+
   const timer=setInterval(()=>{
     const actual=pedidos.find(x=>x.id===p.id);
     if(!actual||actual.estado!=="pendiente"){
@@ -213,11 +361,33 @@ function programarSonidoPedido(p){
       pendingSoundTimers.delete(p.id);
       return;
     }
+
+    if(actual.modoRetiro==="programado"&&actual.retiroAt){
+      const diff=(new Date(actual.retiroAt).getTime()-nowMs())/60000;
+      if(diff>PREP_MIN)return;
+    }
+
     sonidoCampana();
   },SOUND_REPEAT_MS);
+
   pendingSoundTimers.set(p.id,timer);
 }
 
+function sincronizarProgramados(){
+  pedidos.forEach(p=>{
+    if(p.estado!=="pendiente"||p.modoRetiro!=="programado"||!p.retiroAt)return;
+
+    const diff=(new Date(p.retiroAt).getTime()-nowMs())/60000;
+
+    if(diff<=PREP_MIN){
+      if(!scheduledAlertsPlayed.has(p.id)){
+        scheduledAlertsPlayed.add(p.id);
+        sonidoCampana();
+      }
+      programarSonidoPedido(p);
+    }
+  });
+}
 function detenerSonidoPedido(id){
   const timer=pendingSoundTimers.get(id);
   if(timer){
@@ -230,11 +400,15 @@ document.addEventListener("pointerdown",()=>{
   if(!crearAudio()&& !soundUnlockShown)mostrarAvisoSonido();
 },{once:true});
 document.querySelectorAll(".filter").forEach(b=>b.onclick=()=>{document.querySelectorAll(".filter").forEach(x=>x.classList.remove("active"));b.classList.add("active");filtro=b.dataset.filter;render()});
-function showNotice(texto){noticeText=String(texto||"").trim();if(!noticeText)return;noticeStartedAt=Date.now();clearTimeout(noticeTimer);document.getElementById("noticeText").textContent=noticeText;document.getElementById("noticeAge").textContent="AHORA";document.getElementById("notice").classList.add("show");noticeTimer=setTimeout(()=>{document.getElementById("notice").classList.remove("show");noticeText=""},8000)}
+function showNotice(texto){noticeText=String(texto||"").trim();if(!noticeText)return;noticeStartedAt=Date.now();clearTimeout(noticeTimer);document.getElementById("noticeText").textContent=noticeText;document.getElementById("noticeAge").textContent="AHORA";document.getElementById("notice").classList.add("show");noticeTimer=setTimeout(()=>{document.getElementById("notice").classList.remove("show");noticeText=""},5000)}
 function updateNoticeAge(){if(!noticeStartedAt||!noticeText)return;const s=Math.max(0,Math.floor((Date.now()-noticeStartedAt)/1000));document.getElementById("noticeAge").textContent=s<60?`Hace ${s}s`:`Hace ${Math.floor(s/60)}m`}
-function connect(){const es=new EventSource("/api/cocina");document.getElementById("connectionText").textContent="Tiempo real · conectando…";es.onopen=()=>document.getElementById("connectionText").textContent="Tiempo real · conectado";es.onmessage=e=>{try{const d=JSON.parse(e.data);if(d.tipo==="inicio"){pedidos=d.pedidos||[];render();pedidos.filter(p=>p.estado==="pendiente").forEach(programarSonidoPedido);crearAudio();return}if(d.tipo==="nuevo"){replacePedido(d.pedido);render();sonidoCampana();programarSonidoPedido(d.pedido);return}if(d.tipo==="estado"&&d.pedido){replacePedido(d.pedido);if(d.pedido.estado==="pendiente")programarSonidoPedido(d.pedido);else detenerSonidoPedido(d.pedido.id);if(d.pedido.estado==="entregado"||d.pedido.estado==="anulado")pedidos=pedidos.filter(p=>p.id!==d.pedido.id);render();return}if(d.tipo==="mensaje"){showNotice(d.mensaje);sonidoCampana();return}if(d.tipo==="error")console.error(d.mensaje)}catch(err){console.error(err)}};es.onerror=()=>document.getElementById("connectionText").textContent="Tiempo real · reconectando…"}
+function connect(){const es=new EventSource("/api/cocina");document.getElementById("connectionText").textContent="Tiempo real · conectando…";es.onopen=()=>document.getElementById("connectionText").textContent="Tiempo real · conectado";es.onmessage=e=>{try{const d=JSON.parse(e.data);if(d.tipo==="inicio"){pedidos=d.pedidos||[];render();pedidos.filter(p=>p.estado==="pendiente").forEach(programarSonidoPedido);sincronizarProgramados();crearAudio();return}if(d.tipo==="nuevo"){replacePedido(d.pedido);render();sonidoCampana();programarSonidoPedido(d.pedido);return}if(d.tipo==="estado"&&d.pedido){replacePedido(d.pedido);if(d.pedido.estado==="pendiente")programarSonidoPedido(d.pedido);else detenerSonidoPedido(d.pedido.id);if(d.pedido.estado==="entregado"||d.pedido.estado==="anulado")pedidos=pedidos.filter(p=>p.id!==d.pedido.id);render();return}if(d.tipo==="mensaje"){showNotice(d.mensaje);sonidoCampana();return}if(d.tipo==="error")console.error(d.mensaje)}catch(err){console.error(err)}};es.onerror=()=>document.getElementById("connectionText").textContent="Tiempo real · reconectando…"}
 connect();
-setInterval(()=>{render();updateNoticeAge()},10000);
+setInterval(()=>{
+  render();
+  updateNoticeAge();
+  sincronizarProgramados();
+},10000);
 setInterval(()=>{const n=new Date();document.getElementById("clock").textContent=new Intl.DateTimeFormat("es-AR",{timeZone:"America/Argentina/Buenos_Aires",hour:"2-digit",minute:"2-digit",hour12:false}).format(n);document.getElementById("date").textContent=new Intl.DateTimeFormat("es-AR",{timeZone:"America/Argentina/Buenos_Aires",weekday:"short",day:"2-digit",month:"short"}).format(n)},1000);
 render();
 crearAudio();
