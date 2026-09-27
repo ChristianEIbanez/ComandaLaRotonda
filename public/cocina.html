@@ -48,7 +48,7 @@ body{display:flex;flex-direction:column}
 
 .ticket{background:linear-gradient(180deg,#f8fafb,#edf1f3);color:#111;border:2px solid #d3d9de;border-radius:11px;min-width:0;min-height:295px;height:auto;display:flex;flex-direction:column;overflow:visible;box-shadow:0 5px 18px rgba(0,0,0,.24);position:relative}.ticket.new{animation:newTicket .8s ease-in-out infinite}.ticket.pending{border-top:5px solid var(--yellow)}.ticket.scheduled{border-top:5px solid var(--purple);box-shadow:0 0 0 1px rgba(155,135,245,.18),0 5px 18px rgba(0,0,0,.24)}.ticket.scheduled .status{background:#eee9ff;color:#6347a8}.ticket.scheduled .scheduled{background:#eee9ff;color:#6347a8}.ticket.cooking{border-top:5px solid var(--blue)}.ticket.ready{border-top:5px solid var(--green)}.ticket.urgent{border-top-color:var(--red);box-shadow:0 0 0 1px rgba(239,68,68,.25),0 6px 20px rgba(0,0,0,.28)}.ticket.delayed{border-top-color:#b91c1c;box-shadow:0 0 0 2px rgba(185,28,28,.25),0 6px 24px rgba(0,0,0,.3)}
 @keyframes newTicket{0%,100%{transform:scale(1)}50%{transform:scale(1.012)}}
-.ticket-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:10px 11px 8px;border-bottom:1px solid #dbe0e4}.ticket-id{font-size:38px;line-height:.9;font-weight:950;letter-spacing:-1.5px}.status{font-size:10px;font-weight:950;padding:6px 8px;border-radius:6px;background:#e5e9ec;white-space:nowrap}.pending .status{background:#fff1ad}.cooking .status{background:#dceeff;color:#075f9f}.ready .status{background:#d9f7e5;color:#0c7a3d}.urgent .status,.delayed .status{background:#ffe0df;color:#b42318}
+.ticket-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:10px 11px 8px;border-bottom:1px solid #dbe0e4}.ticket-id-wrap{display:flex;align-items:baseline;gap:14px;min-width:0;flex-wrap:wrap}.ticket-id{font-size:38px;line-height:.9;font-weight:950;letter-spacing:-1.5px}.scheduled-top-time{font-size:30px;line-height:.95;font-weight:950;letter-spacing:-.8px;color:#6347a8;white-space:nowrap}.scheduled-countdown{font-size:19px;line-height:1;font-weight:950;color:#6347a8;white-space:nowrap}.status{font-size:10px;font-weight:950;padding:6px 8px;border-radius:6px;background:#e5e9ec;white-space:nowrap}.pending .status{background:#fff1ad}.cooking .status{background:#dceeff;color:#075f9f}.ready .status{background:#d9f7e5;color:#0c7a3d}.urgent .status,.delayed .status{background:#ffe0df;color:#b42318}
 .ticket-meta{padding:9px 11px 9px;border-bottom:1px solid #e0e4e7}.destination-line{font-size:clamp(25px,1.8vw,34px);font-weight:950;line-height:1.02;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;display:block}.destination-line .customer-inline{font-weight:950}.time-row{display:flex;align-items:center;justify-content:space-between;gap:7px;margin-top:8px}.age{font-size:13px;font-weight:950;color:#4b5560}.age.hot{color:#c21f1f}.scheduled{font-size:10px;font-weight:950;background:#fff2e4;color:#9a4b00;border-radius:5px;padding:4px 6px;white-space:nowrap}
 .items{padding:7px 11px 2px;flex:1;min-height:0;overflow:visible}.item{padding:10px 0;border-bottom:1px solid #e1e5e8}.item:last-child{border-bottom:0}.item-main{display:grid;grid-template-columns:52px minmax(0,1fr);gap:8px;align-items:start}.qty{font-size:clamp(30px,2vw,40px);font-weight:950;text-align:left;line-height:1}.item-name{font-size:clamp(22px,1.55vw,31px);font-weight:950;line-height:1.05;overflow-wrap:anywhere}.details{font-size:clamp(15px,1vw,19px);color:#4b5560;font-weight:800;line-height:1.18;margin:6px 0 0 60px;overflow-wrap:anywhere}.note{margin:6px 10px 8px;padding:7px 8px;border-left:4px solid var(--orange);background:#fff0df;border-radius:5px;color:#63310c;font-size:11px;font-weight:900;line-height:1.25}.ticket-actions{padding:8px 10px;background:#e7ebee;border-top:1px solid #d3d9de}.action{width:100%;border:0;border-radius:7px;padding:11px 10px;color:#fff;font-size:12px;font-weight:950;cursor:pointer;transition:.12s}.action:hover{filter:brightness(1.05)}.action:disabled{opacity:.55;cursor:wait}.action-start{background:linear-gradient(135deg,#ef8b18,#ff7a00)}.action-ready{background:linear-gradient(135deg,#087fd6,#1b9cf0)}.action-deliver{background:linear-gradient(135deg,#138c45,#20b15a)}
 .empty{grid-column:1/-1;border:1px dashed #303940;border-radius:10px;padding:30px;text-align:center;color:#69747d;font-size:13px;font-weight:850}
@@ -215,6 +215,7 @@ function nowMs(){return Date.now()}
 function pedidoAgeMin(p){return Math.max(0,Math.floor((nowMs()-new Date(p.creadoAt).getTime())/60000))}
 function fmtAge(p){const m=pedidoAgeMin(p);return m<=0?"AHORA":`Hace ${m} ${m===1?"minuto":"minutos"}`}
 function fmtTime(iso){return iso?new Intl.DateTimeFormat("es-AR",{timeZone:"America/Argentina/Buenos_Aires",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date(iso)):""}
+function fmtMarcha(iso){const diff=(new Date(iso).getTime()-nowMs())/60000; if(diff<=0)return "MARCHA AHORA"; const min=Math.ceil(diff-1e-9); return `MARCHA EN ${min} ${min===1?"MIN":"MIN"}`}
 function isScheduledNow(p){if(p.modoRetiro!=="programado"||!p.retiroAt)return false;return new Date(p.retiroAt).getTime()-nowMs()<=PREP_MIN*60000}
 function urgency(p){
   if(p.estado==="listo") return {rank:50,cls:"ready",label:"LISTO"};
@@ -242,8 +243,8 @@ function renderTicket(p){
   const action=p.estado==="pendiente"?`<button class="action action-start" onclick="changeState(${p.id},'marchar',this)">▶ INICIAR PREPARACIÓN</button>`:p.estado==="en_marcha"?`<button class="action action-ready" onclick="changeState(${p.id},'listo',this)">✓ PEDIDO LISTO</button>`:`<button class="action action-deliver" onclick="changeState(${p.id},'entregado',this)">📦 ENTREGADO</button>`;
   const items=(Array.isArray(p.productos)?p.productos:[]).map(x=>{const d=productDetails(x);return `<div class="item"><div class="item-main"><div class="qty">${Number(x.cantidad)||0}</div><div class="item-name">${escapeHtml(x.nombre||"")}</div></div>${d.length?`<div class="details">${d.map(escapeHtml).join(" · ")}</div>`:""}</div>`}).join("");
   return `<article class="ticket ${u.cls} ${p.estado==="pendiente"&&!scheduledDormant?"new":""}" data-id="${p.id}">
-    <div class="ticket-top"><div class="ticket-id">#${escapeHtml(p.numero)}</div><div class="status">${u.label}</div></div>
-    <div class="ticket-meta"><div class="destination-line">${escapeHtml(p.destino||"")}${p.cliente?` <span class="customer-inline">— ${escapeHtml(p.cliente)}</span>`:""}</div><div class="time-row"><span class="age ${hot?'hot':''}">⏱ ${fmtAge(p)}</span>${scheduled?`<span class="scheduled">${scheduledDormant?"PROGRAMADO · ":"RETIRO "}${fmtTime(p.retiroAt)}</span>`:""}</div></div>
+    <div class="ticket-top"><div class="ticket-id-wrap"><div class="ticket-id">#${escapeHtml(p.numero)}</div>${scheduled?`<div class="scheduled-top-time">${fmtTime(p.retiroAt)}</div>${scheduledDormant?`<div class="scheduled-countdown">${fmtMarcha(p.retiroAt)}</div>`:""}`:""}</div><div class="status">${u.label}</div></div>
+    <div class="ticket-meta"><div class="destination-line">${escapeHtml(p.destino||"")}${p.cliente?` <span class="customer-inline">— ${escapeHtml(p.cliente)}</span>`:""}</div><div class="time-row"><span class="age ${hot?'hot':''}">⏱ ${fmtAge(p)}</span></div></div>
     <div class="items">${items||'<div class="empty">Sin productos</div>'}</div>${p.observacion?`<div class="note">⚠ ${escapeHtml(p.observacion)}</div>`:""}<div class="ticket-actions">${action}</div>
   </article>`;
 }
@@ -263,9 +264,45 @@ function render(){
     return;
   }
 
-  const columnCount = filtered.length === 1 ? 1 : filtered.length === 2 ? 2 : 3;
+  /*
+    ORDEN DE PRIORIDAD PARA PENDIENTES:
+    1) Programados que ya entraron en su ventana de preparación (20 min)
+       -> se ordenan por hora de retiro.
+    2) Pedidos para AHORA -> se ordenan por hora de llegada.
+    3) Programados todavía futuros -> se ordenan por hora de retiro.
+
+    Los pedidos EN MARCHA y LISTOS conservan su posición relativa.
+    Así, un programado para 13:30 que ya debe prepararse no queda detrás
+    de un pedido para ahora tomado a las 13:20.
+  */
+  const pendientes = filtered
+    .filter(p => p.estado === "pendiente")
+    .sort((a,b) => {
+      const aProgramado = a.modoRetiro === "programado" && a.retiroAt;
+      const bProgramado = b.modoRetiro === "programado" && b.retiroAt;
+      const aActivo = aProgramado && isScheduledNow(a);
+      const bActivo = bProgramado && isScheduledNow(b);
+
+      if(aActivo !== bActivo) return aActivo ? -1 : 1;
+
+      if(aProgramado && bProgramado){
+        return new Date(a.retiroAt) - new Date(b.retiroAt);
+      }
+
+      if(aProgramado !== bProgramado) return aProgramado ? 1 : -1;
+
+      return new Date(a.creadoAt) - new Date(b.creadoAt);
+    });
+
+  let pendienteIndex = 0;
+  const ordenFinal = filtered.map(p => {
+    if(p.estado === "pendiente") return pendientes[pendienteIndex++];
+    return p;
+  });
+
+  const columnCount = ordenFinal.length === 1 ? 1 : ordenFinal.length === 2 ? 2 : 3;
   const columns = Array.from({length:columnCount},()=>[]);
-  filtered.forEach((pedido,index)=>{
+  ordenFinal.forEach((pedido,index)=>{
     columns[index % columnCount].push(pedido);
   });
 
