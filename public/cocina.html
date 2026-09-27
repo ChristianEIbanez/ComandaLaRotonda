@@ -215,7 +215,7 @@ function nowMs(){return Date.now()}
 function pedidoAgeMin(p){return Math.max(0,Math.floor((nowMs()-new Date(p.creadoAt).getTime())/60000))}
 function fmtAge(p){const m=pedidoAgeMin(p);return m<=0?"AHORA":`Hace ${m} ${m===1?"minuto":"minutos"}`}
 function fmtTime(iso){return iso?new Intl.DateTimeFormat("es-AR",{timeZone:"America/Argentina/Buenos_Aires",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date(iso)):""}
-function fmtMarcha(iso){const diff=(new Date(iso).getTime()-nowMs())/60000; if(diff<=0)return "MARCHA AHORA"; const min=Math.ceil(diff-1e-9); return `MARCHA EN ${min} ${min===1?"MIN":"MIN"}`}
+function fmtMarcha(iso){const inicio=new Date(iso).getTime()-PREP_MIN*60000;const diff=(inicio-nowMs())/60000;if(diff<=0)return "MARCHA AHORA";const min=Math.ceil(diff-1e-9);return `MARCHA EN ${min} MIN`;}
 function isScheduledNow(p){if(p.modoRetiro!=="programado"||!p.retiroAt)return false;return new Date(p.retiroAt).getTime()-nowMs()<=PREP_MIN*60000}
 function urgency(p){
   if(p.estado==="listo") return {rank:50,cls:"ready",label:"LISTO"};
@@ -294,11 +294,29 @@ function render(){
       return new Date(a.creadoAt) - new Date(b.creadoAt);
     });
 
-  let pendienteIndex = 0;
-  const ordenFinal = filtered.map(p => {
-    if(p.estado === "pendiente") return pendientes[pendienteIndex++];
-    return p;
-  });
+  /*
+    ORDEN GENERAL DEL KDS:
+    1) Pendientes / por preparar
+    2) En marcha
+    3) Listos
+
+    Los pendientes conservan la prioridad especial de pedidos programados
+    definida arriba. Dentro de EN MARCHA y LISTOS se conserva el orden
+    cronológico correspondiente.
+  */
+  const enMarcha = filtered
+    .filter(p => p.estado === "en_marcha")
+    .sort((a,b) => new Date(a.creadoAt) - new Date(b.creadoAt));
+
+  const listos = filtered
+    .filter(p => p.estado === "listo")
+    .sort((a,b) => {
+      const ta = a.listoAt || a.creadoAt;
+      const tb = b.listoAt || b.creadoAt;
+      return new Date(ta) - new Date(tb);
+    });
+
+  const ordenFinal = [...pendientes, ...enMarcha, ...listos];
 
   const columnCount = ordenFinal.length === 1 ? 1 : ordenFinal.length === 2 ? 2 : 3;
   const columns = Array.from({length:columnCount},()=>[]);
