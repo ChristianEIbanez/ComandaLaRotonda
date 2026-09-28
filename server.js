@@ -191,6 +191,11 @@ app.get("/cocina.html", (req, res, next) => {
 
     next();
 });
+app.get("/estadisticas.html",(req,res,next)=>{
+    const token=obtenerToken(req);
+    if(!token||!validarSesion(token)) return res.redirect("/login.html?redirect=/estadisticas.html");
+    next();
+});
 app.use(express.static(path.join(__dirname, "public")));
 
 const TIEMPO_PREPARACION_MINUTOS = 20;
@@ -930,6 +935,97 @@ app.post("/api/pedidos/:id/corregir-entrega", requiereAuth, async (req, res) => 
             ok: false,
             mensaje: "Error interno del servidor."
         });
+    }
+});
+
+// ======================================================
+// ANÁLISIS HISTÓRICO DE VENTAS
+// Cantidades y pedidos entregados. No utiliza precios.
+// ======================================================
+function validarFechaAnalisis(valor) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(valor || ""))) return null;
+    const fecha = new Date(valor + "T12:00:00-03:00");
+    if (Number.isNaN(fecha.getTime())) return null;
+    return new Intl.DateTimeFormat("en-CA", {
+        timeZone: "America/Argentina/Buenos_Aires",
+        year: "numeric", month: "2-digit", day: "2-digit"
+    }).format(fecha) === valor ? valor : null;
+}
+function diaSemanaAnalisis(fechaISO) {
+    const [y,m,d] = fechaISO.split("-").map(Number);
+    return new Intl.DateTimeFormat("es-AR", {
+        timeZone: "America/Argentina/Buenos_Aires", weekday: "long"
+    }).format(new Date(Date.UTC(y,m-1,d,12)));
+}
+app.get("/api/estadisticas/analisis", requiereAuth, async (req,res) => {
+    try {
+        const desde=validarFechaAnalisis(req.query.desde);
+        const hasta=validarFechaAnalisis(req.query.hasta);
+        if(!desde||!hasta||desde>hasta) return res.status(400).json({ok:false,mensaje:"Rango de fechas inválido."});
+        const inicio=new Date(desde+"T00:00:00-03:00");
+        const fin=new Date(hasta+"T23:59:59.999-03:00");
+        if(fin-inicio>366*24*60*60*1000) return res.status(400).json({ok:false,mensaje:"El rango máximo es de 366 días."});
+
+        const {data,error}=await supabase.from("pedidos")
+            .select("fecha_operativa, productos")
+            .gte("fecha_operativa",desde).lte("fecha_operativa",hasta)
+            .eq("estado","entregado").order("fecha_operativa",{ascending:true});
+        if(error) throw error;
+
+        const nombres=["lunes","martes","miércoles","jueves","viernes","sábado","domingo"];
+        const semana=new Map(nombres.map(d=>[d,{dia:d,cantidadDias:0,pedidos:0,unidades:0}]));
+        const productos=new Map();
+        const porSemana=new Map(nombres.map(d=>[d,new Map()]));
+        const dias=new Map();
+
+        for(const pedido of data||[]){
+            const fecha=pedido.fecha_operativa;
+            if(!fecha) continue;
+            const dia=diaSemanaAnalisis(fecha);
+            if(!dias.has(fecha)) dias.set(fecha,{fecha,diaSemana:dia,pedidos:0,unidades:0});
+            dias.get(fecha).pedidos++;
+            const sw=semana.get(dia); if(sw) sw.pedidos++;
+            const lista=Array.isArray(pedido.productos)?pedido.productos:[];
+            const productosEnPedido=new Set();
+            for(const p of lista){
+                const nombre=String(p?.nombre||"").trim();
+                const cantidad=Number(p?.cantidad);
+                if(!nombre||!Number.isFinite(cantidad)||cantidad<=0) continue;
+                dias.get(fecha).unidades+=cantidad;
+                if(!productos.has(nombre)) productos.set(nombre,{nombre,unidades:0,pedidos:0});
+                productos.get(nombre).unidades+=cantidad;
+                if(!productosEnPedido.has(nombre)){
+                    productos.get(nombre).pedidos++;
+                    productosEnPedido.add(nombre);
+                }
+                if(sw) {
+                    const mapa=porSemana.get(dia);
+                    mapa.set(nombre,(mapa.get(nombre)||0)+cantidad);
+                    sw.unidades+=cantidad;
+                }
+            }
+        }
+
+        const cursor=new Date(desde+"T12:00:00-03:00");
+        const fechaFin=new Date(hasta+"T12:00:00-03:00");
+        while(cursor<=fechaFin){
+            const fecha=new Intl.DateTimeFormat("en-CA",{timeZone:"America/Argentina/Buenos_Aires",year:"numeric",month:"2-digit",day:"2-digit"}).format(cursor);
+            if(!dias.has(fecha)) dias.set(fecha,{fecha,diaSemana:diaSemanaAnalisis(fecha),pedidos:0,unidades:0});
+            cursor.setUTCDate(cursor.getUTCDate()+1);
+        }
+        for(const d of dias.values()){const sw=semana.get(d.diaSemana);if(sw)sw.cantidadDias++}
+
+        const diasArray=[...dias.values()].sort((a,b)=>a.fecha.localeCompare(b.fecha));
+        const rankingDias=diasArray.filter(x=>x.unidades>0||x.pedidos>0).sort((a,b)=>b.unidades-a.unidades||b.pedidos-a.pedidos||a.fecha.localeCompare(b.fecha)).map((x,n)=>({puesto:n+1,...x}));
+        const semanaArray=nombres.map(d=>{const x=semana.get(d);return {...x,promedioPedidos:x.cantidadDias?Number((x.pedidos/x.cantidadDias).toFixed(2)):0,promedioUnidades:x.cantidadDias?Number((x.unidades/x.cantidadDias).toFixed(2)):0}});
+        const productosArray=[...productos.values()].sort((a,b)=>b.unidades-a.unidades||b.pedidos-a.pedidos||a.nombre.localeCompare(b.nombre,"es")).map((x,n)=>({puesto:n+1,...x}));
+        const productosPorDiaSemana={};
+        for(const d of nombres) productosPorDiaSemana[d]=[...porSemana.get(d).entries()].map(([producto,unidades])=>({producto,unidades})).sort((a,b)=>b.unidades-a.unidades||a.producto.localeCompare(b.producto,"es"));
+
+        res.json({ok:true,desde,hasta,totalPedidos:(data||[]).length,totalUnidades:diasArray.reduce((s,x)=>s+x.unidades,0),dias:diasArray,rankingDias,semana:semanaArray,productos:productosArray,productosPorDiaSemana});
+    } catch(error) {
+        console.error("Error en análisis histórico:",error);
+        res.status(500).json({ok:false,mensaje:"No se pudo obtener el análisis histórico."});
     }
 });
 
