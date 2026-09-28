@@ -961,15 +961,41 @@ app.get("/api/estadisticas/analisis", requiereAuth, async (req,res) => {
     try {
         const desde=validarFechaAnalisis(req.query.desde);
         const hasta=validarFechaAnalisis(req.query.hasta);
-        if(!desde||!hasta||desde>hasta) return res.status(400).json({ok:false,mensaje:"Rango de fechas inválido."});
+
+        if(!desde||!hasta||desde>hasta){
+            return res.status(400).json({ok:false,mensaje:"Rango de fechas inválido."});
+        }
+
         const inicio=new Date(desde+"T00:00:00-03:00");
         const fin=new Date(hasta+"T23:59:59.999-03:00");
-        if(fin-inicio>366*24*60*60*1000) return res.status(400).json({ok:false,mensaje:"El rango máximo es de 366 días."});
+        const duracionMs=fin-inicio;
+
+        if(duracionMs>366*24*60*60*1000){
+            return res.status(400).json({ok:false,mensaje:"El rango máximo es de 366 días."});
+        }
+
+        // Período anterior de igual duración, inmediatamente anterior al seleccionado.
+        const diasPeriodo=Math.round(duracionMs/(24*60*60*1000))+1;
+        const anteriorHasta=new Date(inicio.getTime()-1);
+        const anteriorDesde=new Date(inicio.getTime()-diasPeriodo*24*60*60*1000);
+
+        const fechaISOArgentina=fecha=>{
+            return new Intl.DateTimeFormat("en-CA",{
+                timeZone:"America/Argentina/Buenos_Aires",
+                year:"numeric",month:"2-digit",day:"2-digit"
+            }).format(fecha);
+        };
+
+        const desdeAnterior=fechaISOArgentina(anteriorDesde);
+        const hastaAnterior=fechaISOArgentina(anteriorHasta);
 
         const {data,error}=await supabase.from("pedidos")
-            .select("fecha_operativa, productos")
-            .gte("fecha_operativa",desde).lte("fecha_operativa",hasta)
-            .eq("estado","entregado").order("fecha_operativa",{ascending:true});
+            .select("fecha_operativa, creado_at, productos")
+            .gte("fecha_operativa",desdeAnterior)
+            .lte("fecha_operativa",hasta)
+            .eq("estado","entregado")
+            .order("fecha_operativa",{ascending:true});
+
         if(error) throw error;
 
         const nombres=["lunes","martes","miércoles","jueves","viernes","sábado","domingo"];
@@ -977,52 +1003,204 @@ app.get("/api/estadisticas/analisis", requiereAuth, async (req,res) => {
         const productos=new Map();
         const porSemana=new Map(nombres.map(d=>[d,new Map()]));
         const dias=new Map();
+        const horas=Array.from({length:24},(_,h)=>({hora:h,pedidos:0,unidades:0}));
+        const actualSet=new Set();
+
+        for(let h=0;h<24;h++){
+            horas[h].hora=h;
+        }
 
         for(const pedido of data||[]){
             const fecha=pedido.fecha_operativa;
             if(!fecha) continue;
+
+            const esActual=fecha>=desde && fecha<=hasta;
+            const esAnterior=fecha>=desdeAnterior && fecha<=hastaAnterior;
+            if(!esActual && !esAnterior) continue;
+
+            if(!esActual) continue;
+
+            actualSet.add(fecha);
+
             const dia=diaSemanaAnalisis(fecha);
-            if(!dias.has(fecha)) dias.set(fecha,{fecha,diaSemana:dia,pedidos:0,unidades:0});
+
+            if(!dias.has(fecha)){
+                dias.set(fecha,{fecha,diaSemana:dia,pedidos:0,unidades:0});
+            }
+
             dias.get(fecha).pedidos++;
-            const sw=semana.get(dia); if(sw) sw.pedidos++;
+
+            const sw=semana.get(dia);
+            if(sw) sw.pedidos++;
+
+            if(pedido.creado_at){
+                const partesHora=new Intl.DateTimeFormat("en-US",{
+                    timeZone:"America/Argentina/Buenos_Aires",
+                    hour:"2-digit",
+                    hour12:false
+                }).formatToParts(new Date(pedido.creado_at));
+
+                const horaParte=partesHora.find(p=>p.type==="hour")?.value;
+                const hora=Number(horaParte);
+
+                if(Number.isInteger(hora) && hora>=0 && hora<=23){
+                    horas[hora].pedidos++;
+                }
+            }
+
             const lista=Array.isArray(pedido.productos)?pedido.productos:[];
             const productosEnPedido=new Set();
+
             for(const p of lista){
                 const nombre=String(p?.nombre||"").trim();
                 const cantidad=Number(p?.cantidad);
+
                 if(!nombre||!Number.isFinite(cantidad)||cantidad<=0) continue;
+
                 dias.get(fecha).unidades+=cantidad;
-                if(!productos.has(nombre)) productos.set(nombre,{nombre,unidades:0,pedidos:0});
+
+                if(!productos.has(nombre)){
+                    productos.set(nombre,{nombre,unidades:0,pedidos:0});
+                }
+
                 productos.get(nombre).unidades+=cantidad;
+
                 if(!productosEnPedido.has(nombre)){
                     productos.get(nombre).pedidos++;
                     productosEnPedido.add(nombre);
                 }
-                if(sw) {
+
+                if(sw){
                     const mapa=porSemana.get(dia);
                     mapa.set(nombre,(mapa.get(nombre)||0)+cantidad);
                     sw.unidades+=cantidad;
+                }
+
+                // La cantidad vendida por hora se asigna a la hora del pedido.
+                if(pedido.creado_at){
+                    const partesHora=new Intl.DateTimeFormat("en-US",{
+                        timeZone:"America/Argentina/Buenos_Aires",
+                        hour:"2-digit",
+                        hour12:false
+                    }).formatToParts(new Date(pedido.creado_at));
+
+                    const horaParte=partesHora.find(p=>p.type==="hour")?.value;
+                    const hora=Number(horaParte);
+
+                    if(Number.isInteger(hora) && hora>=0 && hora<=23){
+                        horas[hora].unidades+=cantidad;
+                    }
+                }
+            }
+        }
+
+        // Obtener totales del período anterior sin mezclar sus productos con el período actual.
+        let anteriorPedidos=0;
+        let anteriorUnidades=0;
+
+        for(const pedido of data||[]){
+            const fecha=pedido.fecha_operativa;
+            if(!fecha || fecha<desdeAnterior || fecha>hastaAnterior) continue;
+
+            anteriorPedidos++;
+
+            const lista=Array.isArray(pedido.productos)?pedido.productos:[];
+            for(const p of lista){
+                const cantidad=Number(p?.cantidad);
+                if(Number.isFinite(cantidad) && cantidad>0){
+                    anteriorUnidades+=cantidad;
                 }
             }
         }
 
         const cursor=new Date(desde+"T12:00:00-03:00");
         const fechaFin=new Date(hasta+"T12:00:00-03:00");
+
         while(cursor<=fechaFin){
-            const fecha=new Intl.DateTimeFormat("en-CA",{timeZone:"America/Argentina/Buenos_Aires",year:"numeric",month:"2-digit",day:"2-digit"}).format(cursor);
-            if(!dias.has(fecha)) dias.set(fecha,{fecha,diaSemana:diaSemanaAnalisis(fecha),pedidos:0,unidades:0});
+            const fecha=fechaISOArgentina(cursor);
+
+            if(!dias.has(fecha)){
+                dias.set(fecha,{
+                    fecha,
+                    diaSemana:diaSemanaAnalisis(fecha),
+                    pedidos:0,
+                    unidades:0
+                });
+            }
+
             cursor.setUTCDate(cursor.getUTCDate()+1);
         }
-        for(const d of dias.values()){const sw=semana.get(d.diaSemana);if(sw)sw.cantidadDias++}
+
+        for(const d of dias.values()){
+            const sw=semana.get(d.diaSemana);
+            if(sw) sw.cantidadDias++;
+        }
 
         const diasArray=[...dias.values()].sort((a,b)=>a.fecha.localeCompare(b.fecha));
-        const rankingDias=diasArray.filter(x=>x.unidades>0||x.pedidos>0).sort((a,b)=>b.unidades-a.unidades||b.pedidos-a.pedidos||a.fecha.localeCompare(b.fecha)).map((x,n)=>({puesto:n+1,...x}));
-        const semanaArray=nombres.map(d=>{const x=semana.get(d);return {...x,promedioPedidos:x.cantidadDias?Number((x.pedidos/x.cantidadDias).toFixed(2)):0,promedioUnidades:x.cantidadDias?Number((x.unidades/x.cantidadDias).toFixed(2)):0}});
-        const productosArray=[...productos.values()].sort((a,b)=>b.unidades-a.unidades||b.pedidos-a.pedidos||a.nombre.localeCompare(b.nombre,"es")).map((x,n)=>({puesto:n+1,...x}));
-        const productosPorDiaSemana={};
-        for(const d of nombres) productosPorDiaSemana[d]=[...porSemana.get(d).entries()].map(([producto,unidades])=>({producto,unidades})).sort((a,b)=>b.unidades-a.unidades||a.producto.localeCompare(b.producto,"es"));
 
-        res.json({ok:true,desde,hasta,totalPedidos:(data||[]).length,totalUnidades:diasArray.reduce((s,x)=>s+x.unidades,0),dias:diasArray,rankingDias,semana:semanaArray,productos:productosArray,productosPorDiaSemana});
+        const rankingDias=diasArray
+            .filter(x=>x.unidades>0||x.pedidos>0)
+            .sort((a,b)=>b.unidades-a.unidades||b.pedidos-a.pedidos||a.fecha.localeCompare(b.fecha))
+            .map((x,n)=>({puesto:n+1,...x}));
+
+        const semanaArray=nombres.map(d=>{
+            const x=semana.get(d);
+            return {
+                ...x,
+                promedioPedidos:x.cantidadDias?Number((x.pedidos/x.cantidadDias).toFixed(2)):0,
+                promedioUnidades:x.cantidadDias?Number((x.unidades/x.cantidadDias).toFixed(2)):0
+            };
+        });
+
+        const totalUnidades=diasArray.reduce((s,x)=>s+x.unidades,0);
+
+        const productosArray=[...productos.values()]
+            .sort((a,b)=>b.unidades-a.unidades||b.pedidos-a.pedidos||a.nombre.localeCompare(b.nombre,"es"))
+            .map((x,n)=>({
+                puesto:n+1,
+                ...x,
+                porcentajeTotal:totalUnidades?Number((x.unidades/totalUnidades*100).toFixed(1)):0
+            }));
+
+        const productosPorDiaSemana={};
+        for(const d of nombres){
+            productosPorDiaSemana[d]=[...porSemana.get(d).entries()]
+                .map(([producto,unidades])=>({producto,unidades}))
+                .sort((a,b)=>b.unidades-a.unidades||a.producto.localeCompare(b.producto,"es"));
+        }
+
+        const ventasPorHora=horas.map(x=>({
+            ...x,
+            etiqueta:String(x.hora).padStart(2,"0")+":00"
+        }));
+
+        const variacionUnidades=anteriorUnidades
+            ? Number(((totalUnidades-anteriorUnidades)/anteriorUnidades*100).toFixed(1))
+            : null;
+
+        const variacionPedidos=anteriorPedidos
+            ? Number(((data.filter(p=>p.fecha_operativa>=desde&&p.fecha_operativa<=hasta).length-anteriorPedidos)/anteriorPedidos*100).toFixed(1))
+            : null;
+
+        res.json({
+            ok:true,
+            desde,
+            hasta,
+            desdeAnterior,
+            hastaAnterior,
+            totalPedidos:(data||[]).filter(p=>p.fecha_operativa>=desde&&p.fecha_operativa<=hasta).length,
+            totalUnidades,
+            anteriorPedidos,
+            anteriorUnidades,
+            variacionPedidos,
+            variacionUnidades,
+            dias:diasArray,
+            rankingDias,
+            semana:semanaArray,
+            productos:productosArray,
+            productosPorDiaSemana,
+            ventasPorHora
+        });
     } catch(error) {
         console.error("Error en análisis histórico:",error);
         res.status(500).json({ok:false,mensaje:"No se pudo obtener el análisis histórico."});

@@ -51,21 +51,54 @@ function f(iso){var a=iso.split("-");return a[2]+"/"+a[1]+"/"+a[0]}
 function fm(iso){var a=iso.split("-");return a[2]+"/"+a[1]}
 function estado(){var p=new Intl.DateTimeFormat("en-US",{timeZone:"America/Argentina/Buenos_Aires",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",hour12:false}).formatToParts(new Date()),g=function(t){return p.find(function(x){return x.type===t}).value},y=+g("year"),m=+g("month"),d=+g("day"),h=+g("hour");if(h<2){var z=new Date(y,m-1,d-1);y=z.getFullYear();m=z.getMonth()+1;d=z.getDate()}return{mes:y+"-"+String(m).padStart(2,"0"),hoy:y+"-"+String(m).padStart(2,"0")+"-"+String(d).padStart(2,"0")}}
 function ultimo(m){var a=m.split("-");return new Date(+a[0],+a[1],0).toISOString().slice(0,10)}
-async function cargar(a,b){document.getElementById("app").innerHTML='<div class="loading">Calculando análisis…</div>';try{var r=await fetch("/api/estadisticas/analisis?desde="+a+"&hasta="+b),x=await r.json();if(!r.ok||!x.ok)throw Error(x.mensaje||"No se pudo cargar");D=x;render()}catch(e){document.getElementById("app").innerHTML='<div class="empty">'+esc(e.message)+'</div>'}}
-function render(){var x=D,mejor=x.rankingDias[0],sem=x.semana.slice().sort(function(a,b){return b.unidades-a.unidades||b.pedidos-a.pedidos})[0],max=Math.max.apply(null,x.dias.map(function(a){return a.unidades}).concat([1]));
-document.getElementById("app").innerHTML=
-'<div class="kpis"><div class="kpi"><b>PEDIDOS ENTREGADOS</b><strong>'+x.totalPedidos+'</strong><span>'+f(x.desde)+' → '+f(x.hasta)+'</span></div>'+
-'<div class="kpi"><b>UNIDADES VENDIDAS</b><strong>'+x.totalUnidades+'</strong><span>'+x.productos.length+' productos diferentes</span></div>'+
-'<div class="kpi"><b>MEJOR FECHA</b><strong>'+(mejor?f(mejor.fecha):"—")+'</strong><span>'+(mejor?mejor.unidades+" unidades · "+mejor.pedidos+" pedidos":"Sin ventas")+'</span></div>'+
-'<div class="kpi"><b>MEJOR DÍA DE SEMANA</b><strong>'+(sem?N[sem.dia]:"—")+'</strong><span>'+(sem?sem.unidades+" unidades en el período":"Sin ventas")+'</span></div></div>'+
-'<div class="grid"><div class="card"><h2>📅 Ventas por fecha</h2><p>Cada día del período seleccionado.</p><div class="bars">'+x.dias.map(function(a){var h=a.unidades?Math.max(3,Math.round(a.unidades/max*210)):2;return '<div class="bc"><div class="bw"><div class="bar" style="height:'+h+'px"><i>'+a.unidades+'</i></div></div><div class="lab">'+fm(a.fecha)+'</div></div>'}).join("")+'</div></div>'+
-'<div class="card"><h2>🏆 Ranking de fechas</h2><p>Ordenado por unidades vendidas.</p><div class="rank">'+(x.rankingDias.length?x.rankingDias.slice(0,15).map(function(a){return '<div class="rr"><div class="pos">#'+a.puesto+'</div><div><div class="name">'+f(a.fecha)+' · '+N[a.diaSemana]+'</div><div class="meta">'+a.pedidos+' pedidos</div></div><div class="num">'+a.unidades+'</div></div>'}).join(""):'<div class="empty">Sin ventas.</div>')+'</div></div></div>'+
-'<div class="grid"><div class="card"><h2>📆 Comparación por día de la semana</h2><p>Total y promedio por aparición en el período.</p><table class="table"><thead><tr><th>Día</th><th>Veces</th><th>Pedidos</th><th>Unidades</th><th>Promedio</th></tr></thead><tbody>'+x.semana.map(function(a){return '<tr><td>'+N[a.dia]+'</td><td>'+a.cantidadDias+'</td><td>'+a.pedidos+'</td><td>'+a.unidades+'</td><td>'+a.promedioUnidades+'</td></tr>'}).join("")+'</tbody></table></div>'+
-'<div class="card"><h2>🍽️ Productos más vendidos</h2><p>Ranking por unidades.</p><div class="rank">'+(x.productos.length?x.productos.slice(0,12).map(function(a){return '<div class="rr"><div class="pos">#'+a.puesto+'</div><div><div class="name">'+esc(a.nombre)+'</div><div class="meta">'+a.pedidos+' pedidos</div></div><div class="num">'+a.unidades+'</div></div>'}).join(""):'<div class="empty">Sin productos.</div>')+'</div></div></div>'+
-'<div class="grid"><div class="card"><h2>🔎 Un producto según el día</h2><p>Compará un producto entre lunes y domingo.</p><select id="producto" class="product">'+x.productos.map(function(a){return '<option value="'+esc(a.nombre)+'">'+esc(a.nombre)+'</option>'}).join("")+'</select><div id="prodSemana"></div></div>'+
-'<div class="card"><h2>📋 Ranking completo de productos</h2><p>Todos los productos del período.</p><div class="rank">'+(x.productos.length?x.productos.map(function(a){return '<div class="rr"><div class="pos">#'+a.puesto+'</div><div class="name">'+esc(a.nombre)+'</div><div class="num">'+a.unidades+'</div></div>'}).join(""):'<div class="empty">Sin productos.</div>')+'</div></div></div>';
-if(document.getElementById("producto")){document.getElementById("producto").onchange=productoSemana;productoSemana()}}
-function productoSemana(){var n=document.getElementById("producto").value,arr=D.semana.map(function(a){var z=(D.productosPorDiaSemana[a.dia]||[]).find(function(p){return p.producto===n});return{dia:a.dia,unidades:z?z.unidades:0}}),mx=Math.max.apply(null,arr.map(function(a){return a.unidades}).concat([1]));document.getElementById("prodSemana").innerHTML=arr.map(function(a){return '<div class="prow"><div>'+N[a.dia]+'</div><div class="track"><div class="fill" style="width:'+Math.round(a.unidades/mx*100)+'%"></div></div><div class="pnum">'+a.unidades+'</div></div>'}).join("")}
+function pct(v){return v==null?"—":(v>0?"+":"")+v+"%"}
+function cargar(a,b){document.getElementById("app").innerHTML='<div class="loading">Calculando análisis…</div>';fetch("/api/estadisticas/analisis?desde="+a+"&hasta="+b).then(function(r){return r.json().then(function(x){if(!r.ok||!x.ok)throw Error(x.mensaje||"No se pudo cargar");return x})}).then(function(x){D=x;render()}).catch(function(e){document.getElementById("app").innerHTML='<div class="empty">'+esc(e.message)+'</div>'})}
+function render(){
+ var x=D,mejor=x.rankingDias[0],sem=x.semana.slice().sort(function(a,b){return b.unidades-a.unidades||b.pedidos-a.pedidos})[0],
+ max=Math.max.apply(null,x.dias.map(function(a){return a.unidades}).concat([1])),
+ maxHora=Math.max.apply(null,x.ventasPorHora.map(function(a){return a.unidades}).concat([1]));
+
+ document.getElementById("app").innerHTML=
+ '<div class="kpis">'+
+ '<div class="kpi"><b>PEDIDOS ENTREGADOS</b><strong>'+x.totalPedidos+'</strong><span>'+f(x.desde)+' → '+f(x.hasta)+'</span></div>'+
+ '<div class="kpi"><b>UNIDADES VENDIDAS</b><strong>'+x.totalUnidades+'</strong><span>'+x.productos.length+' productos diferentes</span></div>'+
+ '<div class="kpi"><b>COMPARACIÓN CON PERÍODO ANTERIOR</b><strong>'+pct(x.variacionUnidades)+'</strong><span>'+x.anteriorUnidades+' unidades · '+f(x.desdeAnterior)+' → '+f(x.hastaAnterior)+'</span></div>'+
+ '<div class="kpi"><b>MEJOR DÍA DE SEMANA</b><strong>'+(sem?N[sem.dia]:"—")+'</strong><span>'+(sem?sem.unidades+" unidades en el período":"Sin ventas")+'</span></div></div>'+
+
+ '<div class="grid">'+
+ '<div class="card"><h2>📅 Ventas por fecha</h2><p>Cada día del período seleccionado.</p><div class="bars">'+x.dias.map(function(a){var h=a.unidades?Math.max(3,Math.round(a.unidades/max*210)):2;return '<div class="bc"><div class="bw"><div class="bar" style="height:'+h+'px"><i>'+a.unidades+'</i></div></div><div class="lab">'+fm(a.fecha)+'</div></div>'}).join("")+'</div></div>'+
+ '<div class="card"><h2>🏆 Ranking de fechas</h2><p>Ordenado por unidades vendidas.</p><div class="rank">'+(x.rankingDias.length?x.rankingDias.slice(0,15).map(function(a){return '<div class="rr"><div class="pos">#'+a.puesto+'</div><div><div class="name">'+f(a.fecha)+' · '+N[a.diaSemana]+'</div><div class="meta">'+a.pedidos+' pedidos</div></div><div class="num">'+a.unidades+'</div></div>'}).join(""):'<div class="empty">Sin ventas.</div>')+'</div></div></div>'+
+
+ '<div class="grid">'+
+ '<div class="card"><h2>🕐 Ventas por hora</h2><p>Unidades vendidas según la hora de creación del pedido.</p><div class="bars">'+x.ventasPorHora.map(function(a){var h=a.unidades?Math.max(3,Math.round(a.unidades/maxHora*210)):2;return '<div class="bc"><div class="bw"><div class="bar" style="height:'+h+'px"><i>'+a.unidades+'</i></div></div><div class="lab">'+a.etiqueta+'</div></div>'}).join("")+'</div></div>'+
+ '<div class="card"><h2>📈 Período anterior</h2><p>Comparación contra el período inmediatamente anterior de igual duración.</p><table class="table"><tbody>'+
+ '<tr><td>Unidades actuales</td><td>'+x.totalUnidades+'</td></tr>'+
+ '<tr><td>Unidades anteriores</td><td>'+x.anteriorUnidades+'</td></tr>'+
+ '<tr><td>Variación unidades</td><td>'+pct(x.variacionUnidades)+'</td></tr>'+
+ '<tr><td>Pedidos actuales</td><td>'+x.totalPedidos+'</td></tr>'+
+ '<tr><td>Pedidos anteriores</td><td>'+x.anteriorPedidos+'</td></tr>'+
+ '<tr><td>Variación pedidos</td><td>'+pct(x.variacionPedidos)+'</td></tr>'+
+ '</tbody></table></div></div>'+
+
+ '<div class="grid">'+
+ '<div class="card"><h2>📆 Comparación por día de la semana</h2><p>Total y promedio por aparición en el período.</p><table class="table"><thead><tr><th>Día</th><th>Veces</th><th>Pedidos</th><th>Unidades</th><th>Promedio</th></tr></thead><tbody>'+x.semana.map(function(a){return '<tr><td>'+N[a.dia]+'</td><td>'+a.cantidadDias+'</td><td>'+a.pedidos+'</td><td>'+a.unidades+'</td><td>'+a.promedioUnidades+'</td></tr>'}).join("")+'</tbody></table></div>'+
+ '<div class="card"><h2>🍽️ Productos más vendidos</h2><p>Ranking por unidades.</p><div class="rank">'+(x.productos.length?x.productos.slice(0,12).map(function(a){return '<div class="rr"><div class="pos">#'+a.puesto+'</div><div><div class="name">'+esc(a.nombre)+'</div><div class="meta">'+a.pedidos+' pedidos · '+a.porcentajeTotal+'% del total</div></div><div class="num">'+a.unidades+'</div></div>'}).join(""):'<div class="empty">Sin productos.</div>')+'</div></div></div>'+
+
+ '<div class="grid">'+
+ '<div class="card"><h2>🔎 Un producto según el día</h2><p>Compará un producto entre lunes y domingo.</p><select id="producto" class="product">'+x.productos.map(function(a){return '<option value="'+esc(a.nombre)+'">'+esc(a.nombre)+'</option>'}).join("")+'</select><div id="prodSemana"></div></div>'+
+ '<div class="card"><h2>🥧 Product Mix</h2><p>Participación de cada producto sobre todas las unidades vendidas.</p><div class="rank">'+(x.productos.length?x.productos.map(function(a){return '<div class="rr"><div class="pos">#'+a.puesto+'</div><div><div class="name">'+esc(a.nombre)+'</div><div class="meta">'+a.unidades+' unidades</div></div><div class="num">'+a.porcentajeTotal+'%</div></div>'}).join(""):'<div class="empty">Sin productos.</div>')+'</div></div></div>'+
+
+ '<div class="grid">'+
+ '<div class="card"><h2>📋 Ranking completo de productos</h2><p>Todos los productos del período.</p><div class="rank">'+(x.productos.length?x.productos.map(function(a){return '<div class="rr"><div class="pos">#'+a.puesto+'</div><div class="name">'+esc(a.nombre)+'</div><div class="num">'+a.unidades+'</div></div>'}).join(""):'<div class="empty">Sin productos.</div>')+'</div></div>'+
+ '<div class="card"><h2>ℹ️ Cómo leer este análisis</h2><p>Las ventas se calculan únicamente con pedidos en estado <b>entregado</b>. El período anterior se calcula automáticamente con la misma cantidad de días. La hora utiliza <b>creado_at</b> convertida a hora de Argentina.</p></div></div>';
+ if(document.getElementById("producto")){document.getElementById("producto").onchange=productoSemana;productoSemana()}
+}
+function productoSemana(){
+ var n=document.getElementById("producto").value,
+ arr=D.semana.map(function(a){var z=(D.productosPorDiaSemana[a.dia]||[]).find(function(p){return p.producto===n});return{dia:a.dia,unidades:z?z.unidades:0}}),
+ mx=Math.max.apply(null,arr.map(function(a){return a.unidades}).concat([1]));
+ document.getElementById("prodSemana").innerHTML=arr.map(function(a){return '<div class="prow"><div>'+N[a.dia]+'</div><div class="track"><div class="fill" style="width:'+Math.round(a.unidades/mx*100)+'%"></div></div><div class="pnum">'+a.unidades+'</div></div>'}).join("")
+}
 document.getElementById("mesBtn").onclick=function(){var m=document.getElementById("mes").value;if(!m)return;var e=estado(),fin=m===e.mes?e.hoy:ultimo(m);cargar(m+"-01",fin)};
 document.getElementById("rangoBtn").onclick=function(){var a=document.getElementById("desde").value,b=document.getElementById("hasta").value;if(!a||!b)return alert("Elegí las dos fechas.");if(a>b)return alert("DESDE no puede ser posterior a HASTA.");cargar(a,b)};
 document.getElementById("logout").onclick=async function(){try{await fetch("/api/logout",{method:"POST"})}finally{location.href="/login.html?redirect=/estadisticas.html"}};
