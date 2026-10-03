@@ -658,6 +658,62 @@ app.post("/api/cocina/mensaje", requiereAuth, async (req, res) => {
 });
 
 // ======================================================
+// AVISAR AL COMANDERO QUE UN PEDIDO YA ESTÁ LISTO
+// No cambia el estado del pedido. Solo emite un aviso en tiempo real.
+// ======================================================
+
+app.post("/api/comandero/mensaje-listo", requiereAuth, async (req, res) => {
+    try {
+        const id = Number(req.body?.id);
+
+        if (!Number.isInteger(id)) {
+            return res.status(400).json({
+                ok: false,
+                mensaje: "ID de pedido inválido."
+            });
+        }
+
+        const { data, error } = await supabase
+            .from("pedidos")
+            .select("id, numero, estado")
+            .eq("id", id)
+            .eq("fecha_operativa", fechaOperativaHoy())
+            .eq("estado", "listo")
+            .single();
+
+        if (error || !data) {
+            return res.status(409).json({
+                ok: false,
+                mensaje: "El pedido ya no figura como listo o no corresponde al día operativo actual."
+            });
+        }
+
+        const evento = {
+            tipo: "mensaje_comandero",
+            id: crypto.randomUUID(),
+            pedidoId: data.id,
+            mensaje: `PEDIDO #${data.numero} LISTO`,
+            creadoAt: new Date().toISOString()
+        };
+
+        emitir(evento);
+
+        res.json({
+            ok: true,
+            evento
+        });
+
+    } catch (error) {
+        console.error("Error avisando al comandero:", error);
+
+        res.status(500).json({
+            ok: false,
+            mensaje: "No se pudo avisar al comandero."
+        });
+    }
+});
+
+// ======================================================
 // PONER PEDIDO EN MARCHA
 // ======================================================
 

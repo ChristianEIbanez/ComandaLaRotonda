@@ -1423,6 +1423,87 @@ async function anularPedidoDesdeComandas(id, numero) {
     }
 }
 
+function mostrarAvisoPedidoListo(texto) {
+    const mensaje = String(texto || "").trim();
+    if (!mensaje) return;
+
+    let aviso = document.getElementById("avisoPedidoListo");
+
+    if (!aviso) {
+        aviso = document.createElement("div");
+        aviso.id = "avisoPedidoListo";
+        aviso.innerHTML = `
+            <div class="aviso-pedido-listo-box">
+                <div class="aviso-pedido-listo-icon">✓</div>
+                <div class="aviso-pedido-listo-label">AVISO DE COCINA</div>
+                <div id="avisoPedidoListoTexto" class="aviso-pedido-listo-texto"></div>
+            </div>
+        `;
+
+        const style = document.createElement("style");
+        style.id = "avisoPedidoListoStyle";
+        style.textContent = `
+            #avisoPedidoListo{
+                position:fixed;
+                inset:0;
+                z-index:9999;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                padding:30px;
+                background:rgba(0,0,0,.76);
+                backdrop-filter:blur(5px);
+            }
+            .aviso-pedido-listo-box{
+                width:min(820px,92vw);
+                padding:42px 34px;
+                text-align:center;
+                border:2px solid #20b15a;
+                border-radius:18px;
+                background:linear-gradient(180deg,#111914,#080b09);
+                box-shadow:0 25px 90px rgba(0,0,0,.65),0 0 35px rgba(32,177,90,.18);
+            }
+            .aviso-pedido-listo-icon{
+                width:72px;
+                height:72px;
+                margin:0 auto 16px;
+                display:grid;
+                place-items:center;
+                border-radius:50%;
+                background:#20b15a;
+                color:#fff;
+                font-size:42px;
+                font-weight:950;
+            }
+            .aviso-pedido-listo-label{
+                color:#72e39a;
+                font-size:15px;
+                font-weight:950;
+                letter-spacing:3px;
+            }
+            .aviso-pedido-listo-texto{
+                margin-top:18px;
+                color:#fff;
+                font-size:clamp(34px,6vw,72px);
+                line-height:1;
+                font-weight:950;
+                letter-spacing:.5px;
+            }
+        `;
+
+        document.head.appendChild(style);
+        document.body.appendChild(aviso);
+    }
+
+    document.getElementById("avisoPedidoListoTexto").textContent = mensaje;
+    aviso.style.display = "flex";
+
+    clearTimeout(window._avisoPedidoListoTimer);
+    window._avisoPedidoListoTimer = setTimeout(() => {
+        aviso.style.display = "none";
+    }, 5000);
+}
+
 function conectarPedidosHoyTiempoReal() {
     const fuente = new EventSource("/api/cocina");
 
@@ -1433,6 +1514,11 @@ function conectarPedidosHoyTiempoReal() {
             if (data.tipo === "inicio") {
                 pedidosHoy = Array.isArray(data.pedidos) ? data.pedidos : [];
                 mostrarPedidosHoy();
+                return;
+            }
+
+            if (data.tipo === "mensaje_comandero") {
+                mostrarAvisoPedidoListo(data.mensaje);
                 return;
             }
 

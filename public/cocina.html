@@ -51,6 +51,9 @@ body{display:flex;flex-direction:column}
 .ticket-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:10px 11px 8px;border-bottom:1px solid #dbe0e4}.ticket-id-wrap{display:flex;align-items:baseline;gap:14px;min-width:0;flex-wrap:wrap}.ticket-id{font-size:38px;line-height:.9;font-weight:950;letter-spacing:-1.5px}.scheduled-top-time{font-size:30px;line-height:.95;font-weight:950;letter-spacing:-.8px;color:#6347a8;white-space:nowrap}.scheduled-countdown{font-size:19px;line-height:1;font-weight:950;color:#6347a8;white-space:nowrap}.status{font-size:10px;font-weight:950;padding:6px 8px;border-radius:6px;background:#e5e9ec;white-space:nowrap}.pending .status{background:#fff1ad}.cooking .status{background:#dceeff;color:#075f9f}.ready .status{background:#d9f7e5;color:#0c7a3d}.urgent .status,.delayed .status{background:#ffe0df;color:#b42318}
 .ticket-meta{padding:9px 11px 9px;border-bottom:1px solid #e0e4e7}.destination-line{font-size:clamp(25px,1.8vw,34px);font-weight:950;line-height:1.02;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;display:block}.destination-line .customer-inline{font-weight:950}.time-row{display:flex;align-items:center;justify-content:space-between;gap:7px;margin-top:8px}.age{font-size:13px;font-weight:950;color:#4b5560}.age.hot{color:#c21f1f}.scheduled{font-size:10px;font-weight:950;background:#fff2e4;color:#9a4b00;border-radius:5px;padding:4px 6px;white-space:nowrap}
 .items{padding:7px 11px 2px;flex:1;min-height:0;overflow:visible}.item{padding:10px 0;border-bottom:1px solid #e1e5e8}.item:last-child{border-bottom:0}.item-main{display:grid;grid-template-columns:52px minmax(0,1fr);gap:8px;align-items:start}.qty{font-size:clamp(30px,2vw,40px);font-weight:950;text-align:left;line-height:1}.item-name{font-size:clamp(22px,1.55vw,31px);font-weight:950;line-height:1.05;overflow-wrap:anywhere}.details{font-size:clamp(15px,1vw,19px);color:#4b5560;font-weight:800;line-height:1.18;margin:6px 0 0 60px;overflow-wrap:anywhere}.note{margin:6px 10px 8px;padding:7px 8px;border-left:4px solid var(--orange);background:#fff0df;border-radius:5px;color:#63310c;font-size:11px;font-weight:900;line-height:1.25}.ticket-actions{padding:8px 10px;background:#e7ebee;border-top:1px solid #d3d9de}.action{width:100%;border:0;border-radius:7px;padding:11px 10px;color:#fff;font-size:12px;font-weight:950;cursor:pointer;transition:.12s}.action:hover{filter:brightness(1.05)}.action:disabled{opacity:.55;cursor:wait}.action-start{background:linear-gradient(135deg,#ef8b18,#ff7a00)}.action-ready{background:linear-gradient(135deg,#087fd6,#1b9cf0)}.action-deliver{background:linear-gradient(135deg,#138c45,#20b15a)}
+.ready-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:7px}
+.action-message{background:linear-gradient(135deg,#7a4de8,#9b6cff)}
+@media(max-width:1050px){.ready-actions{grid-template-columns:1fr}}
 .empty{grid-column:1/-1;border:1px dashed #303940;border-radius:10px;padding:30px;text-align:center;color:#69747d;font-size:13px;font-weight:850}
 .footer{flex:0 0 25px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;color:#59636b;font-size:9px;font-weight:800;background:#080a0c;border-top:1px solid #1e252a}.footer strong{color:#7d878f}
 /* FIX DEFINITIVO: una comanda crece con TODO su contenido */
@@ -240,7 +243,7 @@ function sortTickets(list){return [...list].sort((a,b)=>{const ua=urgency(a),ub=
 function productDetails(p){const d=[];if(p.preparacion)d.push(p.preparacion);if(p.tostado)d.push(p.tostado);if(p.guarnicion)d.push("Guarnición: "+p.guarnicion);d.push(...(p.modificaciones||[]));d.push(...(p.adicionales||[]).map(x=>"+ "+x));return d}
 function renderTicket(p){
   const u=urgency(p);const scheduled=p.modoRetiro==="programado"&&p.retiroAt;const scheduledDormant=scheduled&&p.estado==="pendiente"&&((new Date(p.retiroAt).getTime()-nowMs())/60000)>PREP_MIN;const age=pedidoAgeMin(p);const hot=age>=20;
-  const action=p.estado==="pendiente"?`<button class="action action-start" onclick="changeState(${p.id},'marchar',this)">▶ INICIAR PREPARACIÓN</button>`:p.estado==="en_marcha"?`<button class="action action-ready" onclick="changeState(${p.id},'listo',this)">✓ PEDIDO LISTO</button>`:`<button class="action action-deliver" onclick="changeState(${p.id},'entregado',this)">📦 ENTREGADO</button>`;
+  const action=p.estado==="pendiente"?`<button class="action action-start" onclick="changeState(${p.id},'marchar',this)">▶ INICIAR PREPARACIÓN</button>`:p.estado==="en_marcha"?`<button class="action action-ready" onclick="changeState(${p.id},'listo',this)">✓ PEDIDO LISTO</button>`:`<div class="ready-actions"><button class="action action-message" id="avisoComanderoBtn-${p.id}" onclick="avisarComandero(${p.id},this)">📢 AVISAR COMANDERO</button><button class="action action-deliver" onclick="changeState(${p.id},'entregado',this)">📦 ENTREGADO</button></div>`;
   const items=(Array.isArray(p.productos)?p.productos:[]).map(x=>{const d=productDetails(x);return `<div class="item"><div class="item-main"><div class="qty">${Number(x.cantidad)||0}</div><div class="item-name">${escapeHtml(x.nombre||"")}</div></div>${d.length?`<div class="details">${d.map(escapeHtml).join(" · ")}</div>`:""}</div>`}).join("");
   return `<article class="ticket ${u.cls} ${p.estado==="pendiente"&&!scheduledDormant?"new":""}" data-id="${p.id}">
     <div class="ticket-top"><div class="ticket-id-wrap"><div class="ticket-id">#${escapeHtml(p.numero)}</div>${scheduled?`<div class="scheduled-top-time">${fmtTime(p.retiroAt)}</div>${scheduledDormant?`<div class="scheduled-countdown">${fmtMarcha(p.retiroAt)}</div>`:""}`:""}</div><div class="status">${u.label}</div></div>
@@ -339,6 +342,44 @@ async function changeState(id,state,btn){
   if(btn){btn.disabled=true;btn.textContent="ACTUALIZANDO…"}
   try{const r=await fetch(`/api/pedidos/${id}/${state}`,{method:"POST"});const data=await r.json();if(!r.ok||!data.ok)throw new Error(data.mensaje||"No se pudo actualizar el pedido");if(data.pedido)replacePedido(data.pedido);render()}catch(e){console.error(e);alert(e.message||"No se pudo actualizar el pedido.");render()}
 }
+async function avisarComandero(id,btn){
+  if(btn){
+    btn.disabled=true;
+    btn.textContent="AVISANDO…";
+  }
+
+  try{
+    const respuesta=await fetch("/api/comandero/mensaje-listo",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({id})
+    });
+
+    const resultado=await respuesta.json();
+
+    if(!respuesta.ok||!resultado.ok){
+      throw new Error(resultado.mensaje||"No se pudo avisar al comandero.");
+    }
+
+    if(btn){
+      btn.textContent="✓ AVISADO";
+      setTimeout(()=>{
+        if(btn.isConnected){
+          btn.disabled=false;
+          btn.textContent="📢 AVISAR COMANDERO";
+        }
+      },5000);
+    }
+  }catch(error){
+    console.error(error);
+    if(btn){
+      btn.disabled=false;
+      btn.textContent="📢 AVISAR COMANDERO";
+    }
+    alert(error.message||"No se pudo avisar al comandero.");
+  }
+}
+
 function crearAudio(){
   try{
     audioCtx=audioCtx||new(window.AudioContext||window.webkitAudioContext)();
